@@ -26,23 +26,55 @@ export class ReStreamService {
     }
 
     try {
-      const ffmpegProcess = await this.createFFmpegProcess(stream, destination);
+      console.log(
+        `Starting restream for ${processKey} ${destination.platform}`,
+      );
 
-      this.ffmpegProcesses.set(processKey, {
-        process: ffmpegProcess,
+      const processInfoObject = {
+        process: null,
         streamId: stream.id,
         destinationId: destination.id,
         startTime: new Date(),
         restartCount: 0,
-      });
+      };
+
+      this.ffmpegProcesses.set(processKey, processInfoObject);
+
+      const ffmpegProcess = await this.createFFmpegProcess(stream, destination);
+      processInfoObject.process = ffmpegProcess;
+      this.ffmpegProcesses.set(processKey, processInfoObject);
 
       this.setupProcessMonitoring(processKey, stream, destination);
 
+      console.log(
+        `Restream for ${processKey} ${destination.platform} started!`,
+      );
       return true;
     } catch (error) {
       console.error(`Failed to start restream for ${processKey}:`, error);
       return false;
     }
+  }
+
+  async startAllRestreams(stream: StreamInstance): Promise<void> {
+    console.log(
+      "--------------------------------------------------------------------------------------------",
+    );
+    console.log(
+      "------------ Starting all (" +
+        stream.destinations.length +
+        ") restreams for " +
+        stream.id +
+        " --------------",
+    );
+    console.log(
+      "--------------------------------------------------------------------------------------------",
+    );
+    await Promise.all(
+      stream.destinations.map((destination) =>
+        this.startReStream(stream, destination),
+      ),
+    );
   }
 
   async stopReStream(streamId: string, destinationId: string): Promise<void> {
@@ -67,8 +99,22 @@ export class ReStreamService {
     stream: StreamInstance,
     destination: StreamDestination,
   ): ChildProcess {
-    const inputUrl = stream.rtmpEndpoint;
+    const inputUrl = this.getStreamAccessUrl(stream);
     const outputUrl = `${destination.serverUrl}/${destination.streamKey}`;
+
+    console.log(
+      "--------------------------------------------------------------------------------------------",
+    );
+    console.log(
+      "------------ Creating restream for " +
+        stream.id +
+        " to " +
+        destination.id +
+        " --------------",
+    );
+    console.log(
+      "--------------------------------------------------------------------------------------------",
+    );
 
     const ffmpegArgs = [
       "-i",
@@ -163,5 +209,61 @@ export class ReStreamService {
       uptime: Date.now() - processInfo.startTime.getTime(),
       restartCount: processInfo.restartCount,
     };
+  }
+
+  async captureScreenshot(
+    stream: StreamInstance,
+    outputPath: string,
+  ): Promise<boolean> {
+    try {
+      const formattedSourceUrl = this.getStreamAccessUrl(stream);
+
+      const ffmpegArgs = [
+        "-y", // Overwrite output files without asking
+        "-i",
+        formattedSourceUrl,
+        "-vframes",
+        "1", // Capture just one frame
+        "-q:v",
+        "2", // Quality level (2 is high quality)
+        "-f",
+        "image2",
+        outputPath,
+      ];
+
+      return new Promise((resolve, reject) => {
+        const ffmpeg = spawn("ffmpeg", ffmpegArgs);
+
+        ffmpeg.on("close", (code) => {
+          if (code === 0) {
+            resolve(true);
+          } else {
+            reject(new Error(`FFmpeg exited with code ${code}`));
+          }
+        });
+
+        ffmpeg.stderr.on("data", (data) => {
+          console.log(`Screenshot FFmpeg stderr: ${data}`);
+        });
+
+        // Set a timeout in case the stream is not available
+        setTimeout(() => {
+          ffmpeg.kill();
+          reject(new Error("Screenshot capture timeout"));
+        }, 10000); // 10 second timeout
+      });
+    } catch (error) {
+      console.error("Error capturing screenshot:", error);
+      return false;
+    }
+  }
+
+  public static getStreamAccessUrl(stream: StreamInstance): string {
+    return stream.rtmpEndpoint.replace(
+      /^(rtmp:\/\/[^\/]+)\/(.*?)$/,
+      (_, prefix, path) => {
+        return `${prefix}/${path.replace(/\//g, "")}`;
+      },
+    );
   }
 }

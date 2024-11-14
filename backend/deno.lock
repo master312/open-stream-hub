@@ -32,8 +32,10 @@
     "npm:cors@*": "2.8.5",
     "npm:express@*": "4.21.1",
     "npm:express@^4.21.1": "4.21.1",
+    "npm:fs@^0.0.1-security": "0.0.1-security",
     "npm:node-media-server@2.6.2": "2.6.2",
-    "npm:path-to-regexp@6.2.1": "6.2.1"
+    "npm:path-to-regexp@6.2.1": "6.2.1",
+    "npm:path@~0.12.7": "0.12.7"
   },
   "jsr": {
     "@oak/commons@0.4.0": {
@@ -427,6 +429,9 @@
     "fresh@0.5.2": {
       "integrity": "sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q=="
     },
+    "fs@0.0.1-security": {
+      "integrity": "sha512-3XY9e1pP0CVEUCdj5BmfIZxRBTSDycnbqhIOGec9QYtmVH2fbLpj86CFWkrNOkt/Fvty4KZG5lTglL9j/gJ87w=="
+    },
     "function-bind@1.1.2": {
       "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="
     },
@@ -471,7 +476,7 @@
       "integrity": "sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==",
       "dependencies": [
         "depd",
-        "inherits",
+        "inherits@2.0.4",
         "setprototypeof",
         "statuses",
         "toidentifier"
@@ -482,6 +487,9 @@
       "dependencies": [
         "safer-buffer"
       ]
+    },
+    "inherits@2.0.3": {
+      "integrity": "sha512-x00IRNXNy63jwGkJmzPigoySHbaqpNuzKbBOmzK+g2OdZpQ9w+sxCN+VSB3ja7IAge2OP2qpfxTjeNcyjmW1uw=="
     },
     "inherits@2.0.4": {
       "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ=="
@@ -561,6 +569,16 @@
     },
     "path-to-regexp@6.2.1": {
       "integrity": "sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw=="
+    },
+    "path@0.12.7": {
+      "integrity": "sha512-aXXC6s+1w7otVF9UletFkFcDsJeO7lSZBPUQhtb5O0xJe8LtYhj/GxldoL09bBj9+ZmE2hNoHqQSFMN5fikh4Q==",
+      "dependencies": [
+        "process",
+        "util"
+      ]
+    },
+    "process@0.11.10": {
+      "integrity": "sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A=="
     },
     "proxy-addr@2.0.7": {
       "integrity": "sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==",
@@ -671,6 +689,12 @@
     "unpipe@1.0.0": {
       "integrity": "sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ=="
     },
+    "util@0.10.4": {
+      "integrity": "sha512-0Pm9hTQ3se5ll1XihRic3FDIku70C+iHUdT/W926rSgHV5QgXsYbKZN8MSC3tJtSkhuROzvsQjAaFENRXr+19A==",
+      "dependencies": [
+        "inherits@2.0.3"
+      ]
+    },
     "utils-merge@1.0.1": {
       "integrity": "sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA=="
     },
@@ -748,7 +772,9 @@
       "npm:@types/node@^22.9.0",
       "npm:child_process@^1.0.2",
       "npm:express@^4.21.1",
-      "npm:node-media-server@2.6.2"
+      "npm:fs@^0.0.1-security",
+      "npm:node-media-server@2.6.2",
+      "npm:path@~0.12.7"
     ]
   }
 }

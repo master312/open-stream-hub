@@ -24,7 +24,38 @@ export function createStreamRoutes(
     })
 
     .get("/api/streams/:id/thumbnail", async (req: Request, res: Response) => {
-      // TODO: Implement -> Return thumbnail png for the stream
+      const id = req.params.id;
+
+      try {
+        // Get the stream to verify it exists
+        const stream = await streamManager.getStream(id);
+        if (!stream) {
+          res.status(404).json({ error: "Stream not found" });
+          return;
+        }
+
+        const thumbnail = await streamManager.thumbnailService.getThumbnail(id);
+
+        if (!thumbnail) {
+          res.status(404).json({ error: "Thumbnail not available" });
+          return;
+        }
+
+        // Set appropriate headers
+        res.setHeader("Content-Type", thumbnail.contentType);
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
+
+        // Send the thumbnail
+        res.send(thumbnail.data);
+      } catch (error) {
+        console.error(
+          `Error processing thumbnail request for stream ${id}:`,
+          error,
+        );
+        res.status(500).json({ error: "Internal server error" });
+      }
     })
 
     .post("/api/streams", async (req: Request, res: Response) => {

@@ -7,16 +7,21 @@ import {
 import { crypto } from "crypto";
 import NodeMediaServer from "node-media-server";
 import { ReStreamService } from "./ReStreamService.ts";
+import { StreamThumbnailService } from "./StreamThumbnailService.ts";
 
 export class StreamManager {
+  private STREAM_LIVE_PATH: string = "/live";
   private db: IDatabase;
   private nms: any;
   private reStreamService: ReStreamService;
   private activeStreams: Map<string, any> = new Map(); // Track active stream sessions
+  public readonly thumbnailService: StreamThumbnailService;
 
   constructor(db: IDatabase) {
     this.db = db;
     this.reStreamService = new ReStreamService();
+    this.thumbnailService = new StreamThumbnailService();
+
     this.nms = new NodeMediaServer({
       rtmp: {
         port: 1935,
@@ -31,17 +36,40 @@ export class StreamManager {
       },
     });
 
+    this.restoreStreamStates(); // Restore stream states from DB
     this.setupStreamHandlers();
+  }
+
+  private async restoreStreamStates(): Promise<void> {
+    try {
+      const streams = await this.getAllStreams();
+
+      for (const stream of streams) {
+        if (stream.status === "Live") {
+          // Reset Live streams to Waiting since the connection was lost
+          await this.updateStreamStatus(stream.id, "Waiting");
+        } else if (stream.status === "Waiting") {
+          // Keep Waiting streams in Waiting state
+          // No action needed
+        } else {
+          // Reset any other state (Error, etc) to Stopped
+          await this.updateStreamStatus(stream.id, "Stopped");
+        }
+      }
+
+      console.log("Stream states restored successfully");
+    } catch (error) {
+      console.error("Error restoring stream states:", error);
+    }
   }
 
   private setupStreamHandlers() {
     this.nms.on(
       "prePublish",
       async (id: string, StreamPath: string, args: any) => {
-        const streamKey = StreamPath.split("/").pop();
+        const streamKey = this.extractStreamKey(StreamPath);
         if (!streamKey) return;
         const stream = await this.findStreamByStreamKey(streamKey);
-
         if (!stream) {
           const session = this.nms.getSession(id);
           session.reject();
@@ -62,10 +90,9 @@ export class StreamManager {
     this.nms.on(
       "postPublish",
       async (id: string, StreamPath: string, args: any) => {
-        const streamKey = StreamPath.split("/").pop();
+        const streamKey = this.extractStreamKey(StreamPath);
         if (!streamKey) return;
         const stream = await this.findStreamByStreamKey(streamKey);
-
         if (stream) {
           await this.updateStreamStatus(stream.id, "Live");
         }
@@ -75,10 +102,9 @@ export class StreamManager {
     this.nms.on(
       "donePublish",
       async (id: string, StreamPath: string, args: any) => {
-        const streamKey = StreamPath.split("/").pop();
+        const streamKey = this.extractStreamKey(StreamPath);
         if (!streamKey) return;
         const stream = await this.findStreamByStreamKey(streamKey);
-
         if (stream) {
           await this.updateStreamStatus(stream.id, "Waiting");
           this.activeStreams.delete(stream.id);
@@ -90,7 +116,7 @@ export class StreamManager {
   private async findStreamByStreamKey(
     streamKey: string,
   ): Promise<StreamInstance | null> {
-    const streams = await this.getAllStreams();
+    const streams = await this.getAllStreams(); // TODO: Optimize this
     return streams.find((s) => s.rtmpEndpoint.includes(streamKey)) || null;
   }
 
@@ -117,6 +143,13 @@ export class StreamManager {
     try {
       // If there's an active session, disconnect it
       const sessionId = this.activeStreams.get(streamId);
+
+      try {
+        this.reStreamService.stopAllStreams(streamId);
+      } catch (e) {
+        console.error("Error stopping all restreams for stream " + streamId, e);
+      }
+
       if (sessionId) {
         const session = this.nms.getSession(sessionId);
         if (session) {
@@ -161,22 +194,41 @@ export class StreamManager {
 
   private async updateStreamStatus(
     streamId: string,
-    status: StreamStatus,
+    newStatus: StreamStatus,
     statusMessage?: string,
   ): Promise<void> {
     console.log(
       "Updating stream id: '" +
         streamId +
         "' status: '" +
-        status +
+        newStatus +
         "' statusMessage: '" +
         statusMessage +
         "'",
     );
+
+    const stream = await this.getStream(streamId);
+    if (!stream) return;
+
+    //  If stream is going from LIVE state to any other, kill all restreams
+    //  If stream is going from any other state to LIVE, start all restreams
+
+    if (stream.status === "Waiting" && newStatus === "Live") {
+      await this.reStreamService.startAllRestreams(stream);
+
+      await this.thumbnailService.startThumbnailCapture(
+        stream.id,
+        ReStreamService.getStreamAccessUrl(stream),
+      );
+    } else if (stream.status === "Live" && newStatus !== "Live") {
+      await this.reStreamService.stopAllStreams(streamId);
+      this.thumbnailService.stopThumbnailCapture(stream.id);
+    }
+
     await this.db.updateOne(
       "streams",
       { id: streamId },
-      { status, statusMessage },
+      { status: newStatus, statusMessage },
     );
   }
 
@@ -190,7 +242,7 @@ export class StreamManager {
       id: crypto.randomUUID(),
       name,
       apiKey: newApiKey,
-      rtmpEndpoint: `rtmp://localhost:1935/live/${newApiKey}`,
+      rtmpEndpoint: `rtmp://localhost:1935${this.STREAM_LIVE_PATH}/${newApiKey}`,
       status: "Stopped",
       createdAt: new Date(),
       destinations: [],
@@ -232,12 +284,18 @@ export class StreamManager {
     const stream = await this.getStream(streamId);
     if (!stream) return null;
 
+    if (stream.status !== "Stopped" && stream.status !== "Error") {
+      throw new Error(
+        "Cannot remove destination from active stream. Stop the stream first.",
+      );
+    }
+
     const destinationIndex = stream.destinations.findIndex(
       (d) => d.id === destinationId,
     );
     if (destinationIndex === -1) return null;
 
-    // TODO: Kill destination's FFMPEG
+    this.reStreamService.stopReStream(streamId, destinationId);
 
     stream.destinations.splice(destinationIndex, 1);
     return await this.db.updateOne("streams", { id: streamId }, stream);
@@ -249,5 +307,13 @@ export class StreamManager {
     return Array.from(buffer)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
+  }
+
+  private extractStreamKey(streamPath: string): string | null {
+    // Remove the leading STREAM_LIVE_PATH if present
+    const path = streamPath.replace(this.STREAM_LIVE_PATH, "");
+    // Remove any leading or trailing slashes and return the key
+    const streamKey = path.replace(/^\/+|\/+$/g, "");
+    return streamKey || null;
   }
 }

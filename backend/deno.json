@@ -1,8 +1,9 @@
 {
   "tasks": {
-    "dev": "PORT=6636 deno run --allow-read --allow-write --allow-net --allow-env --watch main.ts"
+    "dev": "PORT=6636 deno run --allow-run --allow-read --allow-write --allow-net --allow-env --watch main.ts"
   },
   "imports": {
+    "fs": "npm:fs@^0.0.1-security",
     "oak": "jsr:@oak/oak@^12.5.1",
     "@std/assert": "jsr:@std/assert@1",
     "@types/lowdb": "npm:@types/lowdb@^1.0.15",
@@ -11,6 +12,7 @@
     "express": "npm:express@^4.21.1",
     "@types/express": "npm:@types/express@4.17.21",
     "crypto": "https://deno.land/std@0.210.0/crypto/mod.ts",
-    "node-media-server": "npm:node-media-server@2.6.2"
+    "node-media-server": "npm:node-media-server@2.6.2",
+    "path": "npm:path@^0.12.7"
   }
 }

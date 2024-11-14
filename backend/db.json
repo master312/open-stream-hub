@@ -47,7 +47,7 @@
       "name": "Trafo Stream Hub",
       "apiKey": "a07c4b07d7d5d7f85bbeecab510fdb17",
       "rtmpEndpoint": "rtmp://localhost:1935/live/a07c4b07d7d5d7f85bbeecab510fdb17",
-      "status": "Waiting",
+      "status": "Live",
       "createdAt": "2024-11-14T18:16:01.295Z",
       "destinations": [
         {
@@ -61,10 +61,10 @@
         {
           "platform": "youtube",
           "serverUrl": "rtmp://a.rtmp.youtube.com/live2",
-          "streamKey": "dasd asd as das ",
+          "streamKey": "xw66-199y-27ew-373c-47jr",
           "status": "disconnected",
           "enabled": true,
-          "id": "d6617d22-99b3-4db9-a123-f049b6b4af8e"
+          "id": "5b3e452e-ba23-4cb9-b456-59de89bac169"
         }
       ]
     }
