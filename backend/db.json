@@ -47,7 +47,7 @@
       "name": "Trafo Stream Hub",
       "apiKey": "a07c4b07d7d5d7f85bbeecab510fdb17",
       "rtmpEndpoint": "rtmp://localhost:1935/live/a07c4b07d7d5d7f85bbeecab510fdb17",
-      "status": "Live",
+      "status": "Waiting",
       "createdAt": "2024-11-14T18:16:01.295Z",
       "destinations": [
         {

@@ -36,15 +36,20 @@ export class StreamManager {
       },
     });
 
-    this.restoreStreamStates(); // Restore stream states from DB
+    setTimeout(() => {
+      this.restoreStreamStates(); // Restore stream states from DB
+    }, 500); // Wait half a sec before restoring stream states
     this.setupStreamHandlers();
   }
 
   private async restoreStreamStates(): Promise<void> {
     try {
       const streams = await this.getAllStreams();
-
+      console.log("Restoring stream states for " + streams.length + " streams");
       for (const stream of streams) {
+        console.log(
+          "Restoring stream state for " + stream.id + ": " + stream.status,
+        );
         if (stream.status === "Live") {
           // Reset Live streams to Waiting since the connection was lost
           await this.updateStreamStatus(stream.id, "Waiting");

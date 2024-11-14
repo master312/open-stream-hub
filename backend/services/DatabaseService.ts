@@ -30,6 +30,10 @@ export class DatabaseService implements IDatabase {
   }
 
   async find(collection: string, query: object): Promise<any[]> {
+    if (!query || Object.keys(query).length === 0) {
+      return this.data[collection];
+    }
+
     return this.data[collection].filter((item: any) =>
       Object.entries(query).every(([key, value]) => item[key] === value),
     );

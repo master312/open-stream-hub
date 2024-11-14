@@ -82,7 +82,10 @@ export class ReStreamService {
     const processInfo = this.ffmpegProcesses.get(processKey);
 
     if (processInfo) {
-      processInfo.process.kill();
+      if (processInfo.process) {
+        processInfo.process.kill();
+      }
+
       this.ffmpegProcesses.delete(processKey);
     }
   }
