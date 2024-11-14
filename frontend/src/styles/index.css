@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom toast styles */
+.Toastify__toast {
+    @apply bg-background-secondary border border-border-primary;
+}
+
+.Toastify__toast-body {
+    @apply text-content-primary;
+}
+
+.Toastify__progress-bar {
+    @apply bg-content-accent;
+}
+
+.Toastify__close-button {
+    @apply text-content-secondary hover:text-content-primary;
+}
+
+/* Success toast */
+.Toastify__toast--success {
+    @apply bg-status-success bg-opacity-10 border-status-success;
+}
+
+/* Error toast */
+.Toastify__toast--error {
+    @apply bg-status-error bg-opacity-10 border-status-error;
+}

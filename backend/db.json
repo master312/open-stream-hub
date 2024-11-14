@@ -1,0 +1,39 @@
+{
+  "streams": [
+    {
+      "id": "0e27cf3e-c76a-4771-8256-cac7eef516d5",
+      "name": "TheNameStream",
+      "apiKey": "e93d888d6746b9023e53079601d8e9461ca94eb0c49aeb8a3a991f656d67d5b2",
+      "rtmpEndpoint": "rtmp://localhost:1935/live/4a677e164bbc53e1a4408cc516919248",
+      "status": "Stopped",
+      "createdAt": "2024-11-14T05:11:12.723Z",
+      "destinations": []
+    },
+    {
+      "id": "edb9846c-7058-4b97-bd4e-7ea54e84f81e",
+      "name": "Trafo Stream Hub",
+      "apiKey": "a07c4b07d7d5d7f85bbeecab510fdb17",
+      "rtmpEndpoint": "rtmp://localhost:1935/live/a07c4b07d7d5d7f85bbeecab510fdb17",
+      "status": "Waiting",
+      "createdAt": "2024-11-14T18:16:01.295Z",
+      "destinations": [
+        {
+          "platform": "twitch",
+          "serverUrl": "rtmp://live-fra.twitch.tv/app",
+          "streamKey": "fsadfg sdag dfsgd fgsd ",
+          "status": "disconnected",
+          "enabled": true,
+          "id": "fcd626d9-bd3b-42e0-a923-48a72a898560"
+        },
+        {
+          "platform": "youtube",
+          "serverUrl": "rtmp://a.rtmp.youtube.com/live2",
+          "streamKey": "dasd asd as das ",
+          "status": "disconnected",
+          "enabled": true,
+          "id": "d6617d22-99b3-4db9-a123-f049b6b4af8e"
+        }
+      ]
+    }
+  ]
+}
