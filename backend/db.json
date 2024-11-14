@@ -7,7 +7,40 @@
       "rtmpEndpoint": "rtmp://localhost:1935/live/4a677e164bbc53e1a4408cc516919248",
       "status": "Stopped",
       "createdAt": "2024-11-14T05:11:12.723Z",
-      "destinations": []
+      "destinations": [
+        {
+          "platform": "twitch",
+          "serverUrl": "testtest",
+          "streamKey": "testsetsetse",
+          "status": "disconnected",
+          "enabled": true,
+          "id": "e73eea95-5ed2-4d01-8b73-10f7c0a9511c"
+        },
+        {
+          "platform": "twitch",
+          "serverUrl": "fsadf",
+          "streamKey": "asdf",
+          "status": "disconnected",
+          "enabled": true,
+          "id": "158f36d4-e90e-4e4e-93b5-e4d3f6196985"
+        },
+        {
+          "platform": "twitch",
+          "serverUrl": "asdfasd",
+          "streamKey": "fasdf",
+          "status": "disconnected",
+          "enabled": true,
+          "id": "6d90bf1e-2fd2-43e7-9539-bbf2384ffdf4"
+        },
+        {
+          "platform": "youtube",
+          "serverUrl": "asfsadfsadfa34r23",
+          "streamKey": "fgasdfg23rfsef",
+          "status": "disconnected",
+          "enabled": true,
+          "id": "d15b2f3c-6fe5-4bec-9a10-360de555a14b"
+        }
+      ]
     },
     {
       "id": "edb9846c-7058-4b97-bd4e-7ea54e84f81e",

@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Modal } from "../shared/Modal";
+import {
+  PlusIcon,
+  XMarkIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 import { Button } from "../shared/Button";
 import { Stream, StreamDestination, StreamStatus } from "../../types/stream";
+import { AddDestinationModal } from "./AddDestinationModal";
+import { StreamDestinationDetailsModal } from "./StreamDestinationDetailsModal";
+
 import { streamsService } from "../../services/streams.service";
 import { toast } from "react-toastify";
 
@@ -14,30 +20,22 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({
   stream,
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] =
-    useState<StreamDestination["platform"]>("twitch");
+  const [selectedDestination, setSelectedDestination] =
+    useState<StreamDestination | null>(null);
 
   const isStreamModifiable =
     stream.status === "Stopped" || stream.status === "Error";
 
-  const handleAddDestination = async (formData: FormData) => {
+  const handleAddDestination = async (
+    destination: Omit<StreamDestination, "id">,
+  ) => {
     if (!isStreamModifiable) {
       toast.warning("Can not add new destination while stream is running");
       return;
     }
 
-    const serverUrl = formData.get("serverUrl") as string;
-    const streamKey = formData.get("streamKey") as string;
-
     try {
-      await streamsService.addDestination(stream.id, {
-        platform: selectedPlatform,
-        serverUrl,
-        streamKey,
-        status: "disconnected",
-        enabled: true,
-      });
-
+      await streamsService.addDestination(stream.id, destination);
       toast.success("Destination added successfully");
       setIsAddModalOpen(false);
     } catch (error) {
@@ -91,9 +89,9 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({
           >
             <div className="flex items-center space-x-3">
               <img
-                src={`/icons/${dest.platform}.svg`}
+                src={`/icons/${dest.platform}.png`}
                 alt={dest.platform}
-                className="w-6 h-6"
+                className="w-8 h-8"
               />
               <div>
                 <div className="text-content-primary font-medium">
@@ -107,84 +105,43 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => handleRemoveDestination(dest.id)}
-              disabled={!isStreamModifiable}
-              className={`text-content-secondary transition-colors ${
-                isStreamModifiable
-                  ? "hover:text-status-error"
-                  : "opacity-50 cursor-not-allowed"
-              }`}
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setSelectedDestination(dest)}
+                className="text-content-secondary hover:text-content-primary transition-colors"
+                title="Show details"
+              >
+                <InformationCircleIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleRemoveDestination(dest.id)}
+                disabled={!isStreamModifiable}
+                className={`text-content-secondary transition-colors ${
+                  isStreamModifiable
+                    ? "hover:text-status-error"
+                    : "opacity-50 cursor-not-allowed"
+                }`}
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      <Modal
+      <AddDestinationModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Add Destination"
-      >
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAddDestination(new FormData(e.currentTarget));
-          }}
-        >
-          <div>
-            <label className="text-sm text-content-secondary">Platform</label>
-            <select
-              value={selectedPlatform}
-              onChange={(e) =>
-                setSelectedPlatform(
-                  e.target.value as StreamDestination["platform"],
-                )
-              }
-              className="w-full bg-background-primary border border-border-primary rounded-lg px-3 py-2
-                       text-content-primary mt-1"
-            >
-              <option value="twitch">Twitch</option>
-              <option value="youtube">YouTube</option>
-              <option value="custom_rtmp">Custom RTMP</option>
-            </select>
-          </div>
+        onSubmit={handleAddDestination}
+      />
 
-          <div>
-            <label className="text-sm text-content-secondary">Server URL</label>
-            <input
-              name="serverUrl"
-              type="text"
-              required
-              className="w-full bg-background-primary border border-border-primary rounded-lg px-3 py-2
-                       text-content-primary mt-1"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-content-secondary">Stream Key</label>
-            <input
-              name="streamKey"
-              type="password"
-              required
-              className="w-full bg-background-primary border border-border-primary rounded-lg px-3 py-2
-                       text-content-primary mt-1"
-            />
-          </div>
-
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="secondary"
-              onClick={() => setIsAddModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Add destination</Button>
-          </div>
-        </form>
-      </Modal>
+      {selectedDestination && (
+        <StreamDestinationDetailsModal
+          isOpen={!!selectedDestination}
+          onClose={() => setSelectedDestination(null)}
+          destination={selectedDestination}
+        />
+      )}
     </div>
   );
 };
