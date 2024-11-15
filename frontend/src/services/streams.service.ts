@@ -228,10 +228,6 @@ class StreamsService {
     this.streams.next(updatedStreams);
   }
 
-  getThumbnailUrl(streamId: string): string {
-    return streamsApi.getStreamThumbnailUrl(streamId);
-  }
-
   async fetchThumbnail(streamId: string): Promise<Blob> {
     try {
       return await streamsApi.getStreamThumbnail(streamId);
@@ -246,7 +242,7 @@ class StreamsService {
   // Helper method to get appropriate thumbnail URL based on stream status
   getStreamThumbnailOrPlaceholder(stream: Stream): string {
     if (stream.status === "Live") {
-      return this.getThumbnailUrl(stream.id);
+      return streamsApi.getStreamThumbnailUrl(stream.id);
     }
 
     // Status-specific placeholder images
