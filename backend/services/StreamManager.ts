@@ -17,9 +17,11 @@ export class StreamManager {
   private activeStreams: Map<string, any> = new Map(); // Track active stream sessions
   public readonly thumbnailService: StreamThumbnailService;
 
+  private statusUpdateLocks: Map<string, Promise<void>> = new Map();
+
   constructor(db: IDatabase) {
     this.db = db;
-    this.reStreamService = new ReStreamService();
+    this.reStreamService = new ReStreamService(db);
     this.thumbnailService = new StreamThumbnailService();
 
     this.nms = new NodeMediaServer({
@@ -40,6 +42,10 @@ export class StreamManager {
       this.restoreStreamStates(); // Restore stream states from DB
     }, 500); // Wait half a sec before restoring stream states
     this.setupStreamHandlers();
+  }
+
+  public getRestreamService(): ReStreamService {
+    return this.reStreamService;
   }
 
   private async restoreStreamStates(): Promise<void> {
@@ -69,6 +75,48 @@ export class StreamManager {
   }
 
   private setupStreamHandlers() {
+    this.nms.on("preConnect", async (id: string, args: any) => {
+      console.log(
+        "[NodeEvent on preConnect]",
+        `id=${id} args=${JSON.stringify(args)}`,
+      );
+
+      const session = this.nms.getSession(id);
+      if (!args["app"]) {
+        session.reject();
+        console.log("REject 1");
+        return;
+      }
+
+      const isPublisher = args.flashVer?.includes("FMLE");
+      console.log("isPublisher: " + isPublisher);
+
+      const streamKey: string = args["app"].replace(
+        this.STREAM_LIVE_PATH.replace("/", ""),
+        "",
+      );
+
+      if (!streamKey) {
+        session.reject();
+        console.log("REject 222");
+        return;
+      }
+      const stream = await this.findStreamByStreamKey(streamKey);
+      if (!stream) {
+        session.reject();
+        console.log("REject 333");
+        return;
+      }
+
+      if (isPublisher && stream.status !== "Waiting") {
+        session.reject();
+        console.log("REject 55");
+      } else if (!isPublisher && stream.status !== "Live") {
+        session.reject();
+        console.log("REject 66 " + stream.status);
+      }
+    });
+
     this.nms.on(
       "prePublish",
       async (id: string, StreamPath: string, args: any) => {
@@ -81,13 +129,12 @@ export class StreamManager {
           return;
         }
 
-        if (stream.status === "Stopped") {
+        if (stream.status !== "Waiting") {
           const session = this.nms.getSession(id);
           session.reject();
           return;
         }
 
-        await this.updateStreamStatus(stream.id, "Waiting");
         this.activeStreams.set(stream.id, id);
       },
     );
@@ -98,9 +145,13 @@ export class StreamManager {
         const streamKey = this.extractStreamKey(StreamPath);
         if (!streamKey) return;
         const stream = await this.findStreamByStreamKey(streamKey);
-        if (stream) {
-          await this.updateStreamStatus(stream.id, "Live");
+        if (!stream || stream.status !== "Waiting") {
+          const session = this.nms.getSession(id);
+          session.reject();
+          return;
         }
+
+        await this.updateStreamStatus(stream.id, "Live");
       },
     );
 
@@ -110,7 +161,7 @@ export class StreamManager {
         const streamKey = this.extractStreamKey(StreamPath);
         if (!streamKey) return;
         const stream = await this.findStreamByStreamKey(streamKey);
-        if (stream) {
+        if (stream && stream.status !== "Stopped") {
           await this.updateStreamStatus(stream.id, "Waiting");
           this.activeStreams.delete(stream.id);
         }
@@ -155,15 +206,19 @@ export class StreamManager {
         console.error("Error stopping all restreams for stream " + streamId, e);
       }
 
+      await this.updateStreamStatus(streamId, "Stopped");
+
       if (sessionId) {
         const session = this.nms.getSession(sessionId);
         if (session) {
           session.reject();
         }
+      }
+
+      if (this.activeStreams.has(streamId)) {
         this.activeStreams.delete(streamId);
       }
 
-      await this.updateStreamStatus(streamId, "Stopped");
       return await this.getStream(streamId);
     } catch (error) {
       await this.updateStreamStatus(streamId, "Error", error.message);
@@ -202,39 +257,57 @@ export class StreamManager {
     newStatus: StreamStatus,
     statusMessage?: string,
   ): Promise<void> {
-    console.log(
-      "Updating stream id: '" +
-        streamId +
-        "' status: '" +
-        newStatus +
-        "' statusMessage: '" +
-        statusMessage +
-        "'",
-    );
-
-    const stream = await this.getStream(streamId);
-    if (!stream) return;
-
-    //  If stream is going from LIVE state to any other, kill all restreams
-    //  If stream is going from any other state to LIVE, start all restreams
-
-    if (stream.status === "Waiting" && newStatus === "Live") {
-      await this.reStreamService.startAllRestreams(stream);
-
-      await this.thumbnailService.startThumbnailCapture(
-        stream.id,
-        ReStreamService.getStreamAccessUrl(stream),
-      );
-    } else if (stream.status === "Live" && newStatus !== "Live") {
-      await this.reStreamService.stopAllStreams(streamId);
-      this.thumbnailService.stopThumbnailCapture(stream.id);
+    // Wait for any previous update to complete before proceeding
+    const previousLock = this.statusUpdateLocks.get(streamId);
+    if (previousLock) {
+      await previousLock;
     }
 
-    await this.db.updateOne(
-      "streams",
-      { id: streamId },
-      { status: newStatus, statusMessage },
-    );
+    // Create a new lock for this update
+    let resolveLock: () => void;
+    const lockPromise = new Promise<void>((resolve) => {
+      resolveLock = resolve;
+    });
+    this.statusUpdateLocks.set(streamId, lockPromise);
+
+    try {
+      console.log(
+        "Updating stream id: '" + streamId + "' status: '" + newStatus,
+      );
+
+      const stream = await this.getStream(streamId);
+      if (!stream) return;
+      let shoudlStart: boolean = false;
+      if (stream.status === "Waiting" && newStatus === "Live") {
+        shoudlStart = true;
+      } else if (stream.status === "Live" && newStatus !== "Live") {
+        shoudlStart = false;
+      }
+
+      if (newStatus === "Stopped" || newStatus == "Error") {
+        // Set status of all destinations to disconnected
+        for (const dest of stream.destinations) {
+          dest.status = "disconnected";
+        }
+      }
+
+      stream.status = newStatus;
+      await this.db.updateOne("streams", { id: streamId }, stream);
+      if (shoudlStart) {
+        await this.reStreamService.startAllRestreams(stream);
+        await this.thumbnailService.startThumbnailCapture(
+          stream.id,
+          ReStreamService.getStreamAccessUrl(stream),
+        );
+      } else {
+        await this.reStreamService.stopAllStreams(streamId);
+        this.thumbnailService.stopThumbnailCapture(stream.id);
+      }
+    } finally {
+      // Release the lock
+      resolveLock!();
+      this.statusUpdateLocks.delete(streamId);
+    }
   }
 
   startRtmpServer() {

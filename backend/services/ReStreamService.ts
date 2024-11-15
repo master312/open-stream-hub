@@ -1,5 +1,6 @@
 import { StreamInstance, StreamDestination } from "../models/interfaces.ts";
 import { spawn, ChildProcess } from "node:child_process";
+import { IDatabase } from "../models/interfaces.ts";
 
 interface FFmpegProcess {
   process: ChildProcess;
@@ -10,9 +11,14 @@ interface FFmpegProcess {
 }
 
 export class ReStreamService {
+  private db: IDatabase;
   private ffmpegProcesses: Map<string, FFmpegProcess> = new Map();
   private readonly MAX_RESTART_ATTEMPTS = 3;
   private readonly RESTART_COOLDOWN_MS = 5000;
+
+  constructor(db: IDatabase) {
+    this.db = db;
+  }
 
   async startReStream(
     stream: StreamInstance,
@@ -102,7 +108,7 @@ export class ReStreamService {
     stream: StreamInstance,
     destination: StreamDestination,
   ): ChildProcess {
-    const inputUrl = this.getStreamAccessUrl(stream);
+    const inputUrl = ReStreamService.getStreamAccessUrl(stream);
     const outputUrl = `${destination.serverUrl}/${destination.streamKey}`;
 
     console.log(
@@ -135,11 +141,11 @@ export class ReStreamService {
 
     // Basic logging
     ffmpeg.stdout.on("data", (data) => {
-      console.log(`FFmpeg ${stream.id}-${destination.id} stdout: ${data}`);
+      // console.log(`FFmpeg ${stream.id}-${destination.id} stdout: ${data}`);
     });
 
     ffmpeg.stderr.on("data", (data) => {
-      console.log(`FFmpeg ${stream.id}-${destination.id} stderr: ${data}`);
+      // console.log(`FFmpeg ${stream.id}-${destination.id} stderr: ${data}`);
     });
 
     return ffmpeg;
@@ -152,66 +158,110 @@ export class ReStreamService {
   ): void {
     const processInfo = this.ffmpegProcesses.get(processKey);
     if (!processInfo) return;
+    this.updateDestinationState(
+      processInfo.streamId,
+      processInfo.destinationId,
+      "connected",
+    ).then(() => {
+      if (processInfo.process.exitCode !== null) {
+        this.updateDestinationState(
+          processInfo.streamId,
+          processInfo.destinationId,
+          processInfo.process.exitCode === 0 ? "disconnected" : "error",
+        );
 
-    processInfo.process.on("exit", async (code, signal) => {
-      console.log(
-        `FFmpeg process ${processKey} exited with code ${code} and signal ${signal}`,
-      );
-
-      if (code !== 0 && processInfo.restartCount < this.MAX_RESTART_ATTEMPTS) {
-        console.log(`Attempting to restart stream ${processKey}`);
-
-        // Implement exponential backoff
-        const backoffTime =
-          this.RESTART_COOLDOWN_MS * Math.pow(2, processInfo.restartCount);
-
-        await new Promise((resolve) => setTimeout(resolve, backoffTime));
-
-        try {
-          const newProcess = await this.createFFmpegProcess(
-            stream,
-            destination,
-          );
-
-          this.ffmpegProcesses.set(processKey, {
-            process: newProcess,
-            streamId: stream.id,
-            destinationId: destination.id,
-            startTime: new Date(),
-            restartCount: processInfo.restartCount + 1,
-          });
-
-          this.setupProcessMonitoring(processKey, stream, destination);
-        } catch (error) {
-          console.error(`Failed to restart stream ${processKey}:`, error);
-          this.ffmpegProcesses.delete(processKey);
-        }
-      } else {
-        this.ffmpegProcesses.delete(processKey);
+        return;
       }
+      processInfo.process.on("exit", async (code, signal) => {
+        console.log(
+          `FFmpeg process ${processKey} exited with code ${code} and signal ${signal}`,
+        );
+
+        var streamId = processInfo.streamId;
+        var streamObj: StreamInstance | undefined = await this.db.findOne(
+          "streams",
+          { id: streamId },
+        );
+
+        if (!streamObj) {
+          console.log(`Stream ${streamId} not found on ffmpeg kill`);
+          return false;
+        }
+
+        if (streamObj.status !== "Live") return;
+
+        if (
+          code !== 0 &&
+          processInfo.restartCount < this.MAX_RESTART_ATTEMPTS
+        ) {
+          console.log(`Attempting to restart stream ${processKey}`);
+
+          // Implement exponential backoff
+          const backoffTime =
+            this.RESTART_COOLDOWN_MS * Math.pow(2, processInfo.restartCount);
+
+          await new Promise((resolve) => setTimeout(resolve, backoffTime));
+
+          try {
+            const newProcess = await this.createFFmpegProcess(
+              stream,
+              destination,
+            );
+
+            this.ffmpegProcesses.set(processKey, {
+              process: newProcess,
+              streamId: stream.id,
+              destinationId: destination.id,
+              startTime: new Date(),
+              restartCount: processInfo.restartCount + 1,
+            });
+
+            this.setupProcessMonitoring(processKey, stream, destination);
+          } catch (error) {
+            console.error(`Failed to restart stream ${processKey}:`, error);
+            this.ffmpegProcesses.delete(processKey);
+          }
+        } else {
+          this.ffmpegProcesses.delete(processKey);
+          await this.updateDestinationState(
+            streamId,
+            processInfo.destinationId,
+            code == 0 ? "disconnected" : "error",
+          );
+        }
+      });
     });
   }
 
-  getStreamStatus(
+  private async updateDestinationState(
     streamId: string,
-    destinationId: string,
-  ): {
-    isRunning: boolean;
-    uptime?: number;
-    restartCount: number;
-  } {
-    const processKey = `${streamId}-${destinationId}`;
-    const processInfo = this.ffmpegProcesses.get(processKey);
-
-    if (!processInfo) {
-      return { isRunning: false, restartCount: 0 };
+    destId: string,
+    status: "connected" | "disconnected" | "error",
+  ): Promise<boolean> {
+    var streamObj: StreamInstance | undefined = await this.db.findOne(
+      "streams",
+      { id: streamId },
+    );
+    if (!streamObj) {
+      console.log(
+        `Stream ${streamId} not found in database on updateDestinationState`,
+      );
+      return false;
     }
 
-    return {
-      isRunning: true,
-      uptime: Date.now() - processInfo.startTime.getTime(),
-      restartCount: processInfo.restartCount,
-    };
+    var destObject: StreamDestination | undefined = streamObj.destinations.find(
+      (dest) => dest.id === destId,
+    );
+    if (!destObject) {
+      console.log(
+        `Destination ${destId} not found in database on updateDestinationState`,
+      );
+      return false;
+    }
+
+    destObject.status = status;
+    await this.db.updateOne("streams", { id: streamId }, streamObj);
+    return true;
   }
 
   async captureScreenshot(
@@ -219,7 +269,7 @@ export class ReStreamService {
     outputPath: string,
   ): Promise<boolean> {
     try {
-      const formattedSourceUrl = this.getStreamAccessUrl(stream);
+      const formattedSourceUrl = ReStreamService.getStreamAccessUrl(stream);
 
       const ffmpegArgs = [
         "-y", // Overwrite output files without asking

@@ -44,6 +44,7 @@ export function createStreamRoutes(
         // Set appropriate headers
         res.setHeader("Content-Type", thumbnail.contentType);
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Content-Length", thumbnail.data.length.toString());
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
 
