@@ -9,9 +9,9 @@ export class MongoDbService implements IService {
   private readonly dbName: string;
   private uri: string;
 
-  constructor(dbName: string = "open-stream-hub") {
+  constructor() {
     this.uri = config.mongodbUrl;
-    this.dbName = dbName;
+    this.dbName = config.mongoDbName;
   }
 
   async initialize(): Promise<void> {

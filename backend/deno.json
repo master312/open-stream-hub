@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "dev": "PORT=6636 deno run --allow-all --watch main.ts"
+    "dev": "deno run --env-file=../.env --allow-all --watch main.ts"
   },
   "imports": {
     "@types/mongodb": "npm:@types/mongodb@^4.0.7",

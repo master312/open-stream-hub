@@ -2,6 +2,7 @@ import express from "npm:express";
 import cors from "npm:cors";
 import { serviceManager } from "./service/index.ts";
 import { createStreamRoutes } from "./routes/streamRoutes.ts";
+import { config } from "./config.ts";
 
 async function main() {
   const app = new express();
@@ -32,7 +33,7 @@ async function main() {
   app.use(router);
 
   // Start HTTP server
-  const PORT = Deno.env.get("PORT") || 3000;
+  const PORT = config.backendPort;
   console.log(`Starting server on port ${PORT}....`);
 
   await app.listen({ port: Number(PORT) });
