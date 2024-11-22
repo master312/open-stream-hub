@@ -2,16 +2,27 @@ NOW:
 - DONE - Rewrite FfmpegRunnerSErvice, not to be AI fuckedup, and to properly handle and report states
   - DONE -  Maybe create some ffmpegInstanceState and update it based on FFmpeg logs
 - DONE - Properly update destination state based on ffmpegInstanceState
-- Handle restarts of FFMPEG process (retry a few times)
+- DONE - Docker and Docker Compose support to run all of this shit
 - Properly merge StreamInstance.ffmpegFlags and StreamDestination.ffmpegFlags
-- Docker and Docker Compose support to run all of this shit
+- Show thumbnail or priview of the stream in the frontend
+
+- ! priprity ! Forbit external clients to directly connect to RTMP injection endpoint
+- ! priprity ! Handle restarts of FFMPEG process (retry a few times)
+- ! priority ! if ffmpeg gets stuck in 'started' ar 'starting' state, restart it.
 
 LATER:
  - Figure out what happens to running FFMPEG processes when backend crashes
  - In frontend, maybe clear up left-over react template tails (if any)
+ - Limit incomming RTMP conections to be allowed only over link specified in 'RTMP_INJECT_PUBLIC_URL'
+
+LOW PRIO:
+- DockerCOmpose Health checks for all services
+- DockerCOmpose Automatic restarts unless explicitly stopped
+- DockerCOmpose Proper service dependencies
+- DockerCOmpose Persistent MongoDB data through volumes
 
 
-REMAINDERS:
+TO TEST:
  -API safety not tested. To test:
   - Can destination be edited/deleted if it's in use?
   - Can stream be edited/deleted if it's in use?

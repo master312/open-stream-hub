@@ -1,0 +1,6 @@
+**/.DS_Store
+**/Thumbs.db
+**/.env
+**/thumbnails/*.jpg
+**/node_modules
+**/dist
