@@ -7,8 +7,6 @@ export type FfmpegProcessStatus =
   | "Stopping"
   | "Stopped";
 
-// Remainder: Error and state are pulled from destination object
-//            A little stupid, i know... but we might expand it later
 export interface FfmpegProcess {
   process?: ChildProcess;
   stream: string; // Stream id
