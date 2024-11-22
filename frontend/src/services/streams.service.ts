@@ -1,13 +1,32 @@
 import { BehaviorSubject } from "rxjs";
 import { StreamInstance, StreamDestination } from "../types/stream.ts";
 import { CreateStreamRequest } from "../types/dto.ts";
+import { interval } from "rxjs";
+import { switchMap } from "rxjs/operators";
+
 import { streamsApi } from "./api/streams";
 
 class StreamsService {
+  // Shitty polling sollution  for now... TODO: Implement websockets in the future
+  private pollingInterval = 4000; // 4 sec
+
   private streams = new BehaviorSubject<StreamInstance[]>([]);
   private currentStream = new BehaviorSubject<StreamInstance | null>(null);
   private loading = new BehaviorSubject<boolean>(false);
   private error = new BehaviorSubject<Error | null>(null);
+  private publicInjestUrl: string = "";
+
+  constructor() {
+    this.fetchPublicInjestUrl();
+    interval(this.pollingInterval)
+      .pipe(
+        switchMap(async () => {
+          console.log("Polling streams...");
+          await this.fetchStreams();
+        }),
+      )
+      .subscribe();
+  }
 
   // Getters for state
   getStreams() {
@@ -16,6 +35,14 @@ class StreamsService {
 
   getCurrentStream() {
     return this.currentStream.value;
+  }
+
+  getFullPublicInjestUrl(streamRtmpEndpoint: string) {
+    // Replace the double slashes with single slashes, but perserve the protocol
+    return `${this.publicInjestUrl}/${streamRtmpEndpoint}`.replace(
+      /(?<!:)\/\//g,
+      "",
+    );
   }
 
   isLoading() {
@@ -33,6 +60,7 @@ class StreamsService {
   error$ = this.error.asObservable();
 
   async fetchStreams() {
+    await this.fetchPublicInjestUrl();
     try {
       this.loading.next(true);
       this.error.next(null);
@@ -52,6 +80,7 @@ class StreamsService {
   }
 
   async fetchStreamById(id: string) {
+    await this.fetchPublicInjestUrl();
     try {
       this.loading.next(true);
       this.error.next(null);
@@ -252,6 +281,21 @@ class StreamsService {
     return (
       statusPlaceholders[stream.state] || "/stream-status-invalid-state.png  "
     );
+  }
+
+  private async fetchPublicInjestUrl() {
+    if (this.publicInjestUrl && this.publicInjestUrl !== "") return;
+    try {
+      const url = await streamsApi.getPublicIngestUrl();
+      this.publicInjestUrl = url;
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error("Failed to fetch public url");
+      this.error.next(error);
+      throw error;
+    } finally {
+      this.loading.next(false);
+    }
   }
 }
 

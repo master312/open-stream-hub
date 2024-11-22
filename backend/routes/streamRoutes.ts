@@ -2,9 +2,24 @@ import { Router } from "npm:express";
 import type { Request, Response } from "npm:express";
 import { streamCrudService, streamMgrService } from "../service/index.ts";
 import { CreateStreamRequest } from "../../common/dto.ts";
+import { config } from "../config.ts";
 
 export function createStreamRoutes(router: Router) {
   router
+    .get("/api/pub_injest_url", async (_req: Request, res: Response) => {
+      try {
+        res.json({
+          url:
+            config.injestRtmpServer.publicUrl +
+            "/" +
+            config.injestRtmpServer.linkRoot,
+        });
+      } catch (error) {
+        console.error("Error fetching public ingest url:", error);
+        res.status(500).json({ error: "Failed to fetch public ingest url" });
+      }
+    })
+
     .get("/api/streams", async (_req: Request, res: Response) => {
       try {
         const streams = await streamCrudService.getAllStreams();
@@ -41,7 +56,6 @@ export function createStreamRoutes(router: Router) {
 
         const stream = await streamCrudService.createStream({
           name,
-          rtmpEndpoint: "", // This should probably be generated
           destinations: [],
         });
         res.status(201).json(stream);

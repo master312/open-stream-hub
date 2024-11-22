@@ -23,7 +23,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
 
   const copyRtmpEndpoint = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(stream.rtmpEndpoint);
+    navigator.clipboard.writeText(
+      streamsService.getFullPublicInjestUrl(stream.apiKey),
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -103,7 +105,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
             onClick={copyRtmpEndpoint}
           >
             <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-            <span className="truncate">{stream.rtmpEndpoint}</span>
+            <span className="truncate">
+              {streamsService.getFullPublicInjestUrl(stream.apiKey)}
+            </span>
             <ClipboardDocumentIcon className="w-4 h-4 ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100" />
             {copied && (
               <span className="ml-2 text-xs text-green-500">Copied!</span>

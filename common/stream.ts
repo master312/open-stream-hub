@@ -6,7 +6,6 @@ export interface StreamInstance {
   id: string;
   name: string;
   apiKey: string;
-  rtmpEndpoint: string;
   state: StreamStatus;
   error?: Error;
   createdAt: Date;

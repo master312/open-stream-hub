@@ -54,7 +54,6 @@ export class StreamCrudService implements IService {
     const streamData: Omit<StreamInstance, "id"> = {
       ...data,
       apiKey,
-      rtmpEndpoint: `${config.injestRtmpServer.publicUrl}/${config.injestRtmpServer.linkRoot}/${apiKey}`,
       state: "Stopped",
       createdAt: new Date(),
     };
