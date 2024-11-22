@@ -5,7 +5,7 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "../shared/Button";
-import { Stream, StreamDestination, StreamStatus } from "../../types/stream";
+import { StreamInstance, StreamDestination } from "../../types/stream";
 import { AddDestinationModal } from "./AddDestinationModal";
 import { StreamDestinationDetailsModal } from "./StreamDestinationDetailsModal";
 
@@ -13,7 +13,7 @@ import { streamsService } from "../../services/streams.service";
 import { toast } from "react-toastify";
 
 interface StreamDestinationsProps {
-  stream: Stream;
+  stream: StreamInstance;
 }
 
 export const StreamDestinations: React.FC<StreamDestinationsProps> = ({
@@ -23,8 +23,7 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({
   const [selectedDestination, setSelectedDestination] =
     useState<StreamDestination | null>(null);
 
-  const isStreamModifiable =
-    stream.status === "Stopped" || stream.status === "Error";
+  const isStreamModifiable = stream.state === "Stopped";
 
   const handleAddDestination = async (
     destination: Omit<StreamDestination, "id">,
@@ -101,7 +100,7 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({
                   {dest.serverUrl}
                 </div>
                 <div className="text-content-secondary text-sm">
-                  Status: {dest.status}
+                  Status: {dest.state}
                 </div>
               </div>
             </div>

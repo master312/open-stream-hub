@@ -6,11 +6,11 @@ import {
   GlobeAltIcon,
   ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
-import { Stream } from "../../types/stream.ts";
+import { StreamInstance } from "../../types/stream.ts";
 import { streamsService } from "../../services/streams.service";
 
 interface StreamCardProps {
-  stream: Stream;
+  stream: StreamInstance;
   onClick: (streamId: string) => void;
 }
 
@@ -81,9 +81,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
           <span className="text-content-primary text-lg font-medium">Edit</span>
         </div>
         <div className="absolute top-3 right-3">
-          <StatusBadge status={stream.status} />
+          <StatusBadge state={stream.state} />
         </div>
-        {stream.status === "Live" && stream.startedAt && (
+        {stream.state === "Live" && stream.startedAt && (
           <div className="absolute bottom-3 right-3 bg-background-primary/75 px-2 py-1 rounded">
             <span className="text-content-primary text-sm">
               {getStreamDuration()}

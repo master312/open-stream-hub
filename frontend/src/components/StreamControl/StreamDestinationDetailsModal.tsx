@@ -57,7 +57,7 @@ export const StreamDestinationDetailsModal: React.FC<
         <div>
           <label className="text-sm text-content-secondary">Status</label>
           <p className="text-content-primary font-medium">
-            {destination.status}
+            {destination.state}
           </p>
         </div>
       </div>

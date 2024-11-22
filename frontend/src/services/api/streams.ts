@@ -1,33 +1,34 @@
-import {
-  Stream,
-  CreateStreamRequest,
-  StreamDestination,
-} from "../../types/stream.ts";
+import { StreamInstance, StreamDestination } from "../../types/stream.ts";
+import { CreateStreamRequest } from "../../types/dto.ts";
 import { apiClient } from "./client";
 
 export const streamsApi = {
-  getStreams: async (): Promise<Stream[]> => {
-    const response = await apiClient.get<Stream[]>("/streams");
+  getStreams: async (): Promise<StreamInstance[]> => {
+    const response = await apiClient.get<StreamInstance[]>("/streams");
     return response.data;
   },
 
-  getStream: async (id: string): Promise<Stream> => {
-    const response = await apiClient.get<Stream>(`/streams/${id}`);
+  getStream: async (id: string): Promise<StreamInstance> => {
+    const response = await apiClient.get<StreamInstance>(`/streams/${id}`);
     return response.data;
   },
 
-  createStream: async (data: CreateStreamRequest): Promise<Stream> => {
-    const response = await apiClient.post<Stream>("/streams", data);
+  createStream: async (data: CreateStreamRequest): Promise<StreamInstance> => {
+    const response = await apiClient.post<StreamInstance>("/streams", data);
     return response.data;
   },
 
-  startStream: async (id: string): Promise<Stream> => {
-    const response = await apiClient.post<Stream>(`/streams/${id}/start`);
+  startStream: async (id: string): Promise<StreamInstance> => {
+    const response = await apiClient.post<StreamInstance>(
+      `/streams/${id}/start`,
+    );
     return response.data;
   },
 
-  stopStream: async (id: string): Promise<Stream> => {
-    const response = await apiClient.post<Stream>(`/streams/${id}/stop`);
+  stopStream: async (id: string): Promise<StreamInstance> => {
+    const response = await apiClient.post<StreamInstance>(
+      `/streams/${id}/stop`,
+    );
     return response.data;
   },
 
@@ -38,8 +39,8 @@ export const streamsApi = {
   addDestination: async (
     streamId: string,
     destination: Omit<StreamDestination, "id">,
-  ): Promise<Stream> => {
-    const response = await apiClient.post<Stream>(
+  ): Promise<StreamInstance> => {
+    const response = await apiClient.post<StreamInstance>(
       `/streams/${streamId}/destinations`,
       destination,
     );
@@ -49,11 +50,11 @@ export const streamsApi = {
   removeDestination: async (
     streamId: string,
     destinationId: string,
-  ): Promise<Stream> => {
+  ): Promise<StreamInstance> => {
     console.log(
       "Removing destination " + destinationId + " from stream " + streamId,
     );
-    const response = await apiClient.delete<Stream>(
+    const response = await apiClient.delete<StreamInstance>(
       `/streams/${streamId}/destinations/${destinationId}`,
     );
     return response.data;

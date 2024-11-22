@@ -1,9 +1,9 @@
 import React from "react";
 import { ClipboardButton } from "../shared/ClipboardButton";
-import { Stream } from "../../types/stream";
+import { StreamInstance } from "../../types/stream";
 
 interface StreamDetailsProps {
-  stream: Stream;
+  stream: StreamInstance;
 }
 
 export const StreamDetails: React.FC<StreamDetailsProps> = ({ stream }) => {
@@ -35,7 +35,7 @@ export const StreamDetails: React.FC<StreamDetailsProps> = ({ stream }) => {
 
         <div>
           <label className="text-sm text-content-secondary">Quality</label>
-          <div className="text-content-primary mt-1">{stream.quality}</div>
+          <div className="text-content-primary mt-1">LALALLALALA</div>
         </div>
       </div>
     </div>

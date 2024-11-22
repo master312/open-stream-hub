@@ -1,0 +1,18 @@
+NOW:
+- DONE - Rewrite FfmpegRunnerSErvice, not to be AI fuckedup, and to properly handle and report states
+  - DONE -  Maybe create some ffmpegInstanceState and update it based on FFmpeg logs
+- DONE - Properly update destination state based on ffmpegInstanceState
+- Handle restarts of FFMPEG process (retry a few times)
+- Properly merge StreamInstance.ffmpegFlags and StreamDestination.ffmpegFlags
+- Docker and Docker Compose support to run all of this shit
+
+LATER:
+ - Figure out what happens to running FFMPEG processes when backend crashes
+ - In frontend, maybe clear up left-over react template tails (if any)
+
+
+REMAINDERS:
+ -API safety not tested. To test:
+  - Can destination be edited/deleted if it's in use?
+  - Can stream be edited/deleted if it's in use?
+  - Can stream be double started?

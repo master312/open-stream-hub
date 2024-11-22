@@ -1,14 +1,11 @@
 import { BehaviorSubject } from "rxjs";
-import {
-  Stream,
-  CreateStreamRequest,
-  StreamDestination,
-} from "../../../common/types";
+import { StreamInstance, StreamDestination } from "../types/stream.ts";
+import { CreateStreamRequest } from "../types/dto.ts";
 import { streamsApi } from "./api/streams";
 
 class StreamsService {
-  private streams = new BehaviorSubject<Stream[]>([]);
-  private currentStream = new BehaviorSubject<Stream | null>(null);
+  private streams = new BehaviorSubject<StreamInstance[]>([]);
+  private currentStream = new BehaviorSubject<StreamInstance | null>(null);
   private loading = new BehaviorSubject<boolean>(false);
   private error = new BehaviorSubject<Error | null>(null);
 
@@ -220,7 +217,7 @@ class StreamsService {
     }
   }
 
-  private updateStreamInList(updatedStream: Stream) {
+  private updateStreamInList(updatedStream: StreamInstance) {
     const currentStreams = this.streams.value;
     const updatedStreams = currentStreams.map((stream) =>
       stream.id === updatedStream.id ? updatedStream : stream,
@@ -240,20 +237,20 @@ class StreamsService {
   }
 
   // Helper method to get appropriate thumbnail URL based on stream status
-  getStreamThumbnailOrPlaceholder(stream: Stream): string {
-    if (stream.status === "Live") {
+  getStreamThumbnailOrPlaceholder(stream: StreamInstance): string {
+    if (stream.state === "Live") {
       return streamsApi.getStreamThumbnailUrl(stream.id);
     }
 
     // Status-specific placeholder images
     const statusPlaceholders = {
       Waiting: "/stream-status-waiting.mp4", // Clock/waiting icon image
-      Error: "/stream-status-error.png", // Error/warning icon image
+      // Error: "/stream-status-error.png", // Error/warning icon image
       Stopped: "/stream-status-stopped.png", // Stop/pause icon image
     };
 
     return (
-      statusPlaceholders[stream.status] || "/stream-status-invalid-state.png  "
+      statusPlaceholders[stream.state] || "/stream-status-invalid-state.png  "
     );
   }
 }

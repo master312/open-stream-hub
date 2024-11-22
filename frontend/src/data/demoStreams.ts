@@ -1,6 +1,6 @@
-import { Stream } from "../types/stream";
+import { StreamInstance } from "../types/stream";
 
-export const demoStreams: Stream[] = [
+export const demoStreams: StreamInstance[] = [
   {
     id: "1",
     name: "Main Event Stream",

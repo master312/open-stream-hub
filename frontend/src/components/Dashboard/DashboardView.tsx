@@ -6,13 +6,13 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import { AddStreamModal } from "./AddStreamModal";
 import { streamsService } from "../../services/streams.service";
 import { CircularProgress } from "../shared/CircularProgress";
-import { Stream } from "../../types/stream";
+import { StreamInstance } from "../../types/stream";
 import { toast } from "react-toastify";
 
 export const DashboardView: React.FC = () => {
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [streams, setStreams] = useState<Stream[]>([]);
+  const [streams, setStreams] = useState<StreamInstance[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -87,7 +87,7 @@ export const DashboardView: React.FC = () => {
               stream={{
                 ...stream,
                 thumbnail: `https://picsum.photos/seed/${stream.id}/800/600`, // Placeholder thumbnail
-                title: stream.name,
+                name: stream.name,
                 destinations: stream.destinations || [],
               }}
               onClick={handleStreamClick}

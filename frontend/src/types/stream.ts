@@ -1,7 +1,5 @@
 export type {
-  Stream,
+  StreamInstance,
   StreamDestination,
   StreamStatus,
-  CreateStreamRequest,
-  StreamAnalytics,
-} from "../../../common/types";
+} from "../../../common/stream";

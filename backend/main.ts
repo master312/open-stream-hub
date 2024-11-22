@@ -1,7 +1,6 @@
 import express from "npm:express";
 import cors from "npm:cors";
-import { DatabaseService } from "./services/DatabaseService.ts";
-import { StreamManager } from "./services/StreamManager.ts";
+import { serviceManager } from "./service/index.ts";
 import { createStreamRoutes } from "./routes/streamRoutes.ts";
 
 async function main() {
@@ -18,16 +17,14 @@ async function main() {
   //   }),
   // );
 
-  // Initialize services
-  const db = new DatabaseService();
-  const streamManager = new StreamManager(db);
-
-  // Start RTMP server
-  streamManager.startRtmpServer();
+  await serviceManager.initialize();
+  if (!serviceManager.isInitialized()) {
+    throw new Error("Service manager failed to initialize!");
+  }
 
   // Setup routes
   const router = express.Router();
-  createStreamRoutes(router, streamManager);
+  createStreamRoutes(router);
 
   // Use router
   app.use(cors());

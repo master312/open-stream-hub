@@ -6,7 +6,7 @@ import { StreamDetails } from "./StreamDetails";
 import { StreamDestinations } from "./StreamDestinations";
 import { StreamAnalytics } from "./StreamAnalytics";
 import { CircularProgress } from "../shared/CircularProgress";
-import { Stream, StreamStatus } from "../../types/stream";
+import { StreamInstance, StreamStatus } from "../../types/stream";
 import { toast } from "react-toastify";
 import {
   TrashIcon,
@@ -19,7 +19,7 @@ import { Modal } from "../shared/Modal";
 export const StreamControlView: React.FC = () => {
   const { streamId } = useParams<{ streamId: string }>();
   const navigate = useNavigate();
-  const [stream, setStream] = useState<Stream | null>(null);
+  const [stream, setStream] = useState<StreamInstance | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -75,7 +75,7 @@ export const StreamControlView: React.FC = () => {
 
   const handleDelete = async () => {
     if (!streamId || !stream) return;
-    if (stream.status !== "Stopped") {
+    if (stream.state !== "Stopped") {
       toast.error("Stream must be stopped before it can be deleted");
       return;
     }
@@ -89,7 +89,7 @@ export const StreamControlView: React.FC = () => {
     );
   };
 
-  const getStreamActionState = (status: StreamStatus) => {
+  const getStreamActionState = (state: StreamStatus) => {
     const states = {
       Live: {
         canStart: false,
@@ -117,16 +117,16 @@ export const StreamControlView: React.FC = () => {
       },
     };
 
-    return states[status];
+    return states[state];
   };
 
   const renderStreamControls = () => {
     if (!stream) return null;
 
-    const actionState = getStreamActionState(stream.status);
+    const actionState = getStreamActionState(stream.state);
 
     const handleDeleteClick = () => {
-      if (stream.status !== "Stopped") {
+      if (stream.state !== "Stopped") {
         toast.error("Stream must be stopped before it can be deleted");
         return;
       }

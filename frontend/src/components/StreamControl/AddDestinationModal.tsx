@@ -29,7 +29,7 @@ export const AddDestinationModal: React.FC<AddDestinationModalProps> = ({
         platform: selectedPlatform,
         serverUrl: formData.get("serverUrl") as string,
         streamKey: formData.get("streamKey") as string,
-        status: "disconnected",
+        state: "Disconnected",
         enabled: true,
       });
       onClose();
