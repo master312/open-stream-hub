@@ -172,7 +172,7 @@ export class FfmpegRunnerService implements IService {
         processes.splice(processes.indexOf(ffmpegProcess), 1);
       }
 
-      if (processes && processes.length === 0)
+      if (!processes || processes.length === 0)
         this.activeStreams.delete(ffmpegProcess.stream);
 
       ffmpegProcess.status = "Stopped";
