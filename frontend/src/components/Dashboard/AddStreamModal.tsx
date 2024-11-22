@@ -19,6 +19,8 @@ export const AddStreamModal: React.FC<AddStreamModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim() || isLoading) return; // Add validation
+
     setIsLoading(true);
     try {
       await onSubmit(name);
@@ -30,9 +32,20 @@ export const AddStreamModal: React.FC<AddStreamModalProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as any);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add New Stream">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        onKeyDown={handleKeyDown}
+      >
         <div>
           <label
             htmlFor="name"
@@ -52,14 +65,18 @@ export const AddStreamModal: React.FC<AddStreamModalProps> = ({
           />
         </div>
         <div className="flex justify-end space-x-3">
-          <Button variant="secondary" onClick={onClose}>
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            type="button" // Add this to prevent form submission
+          >
             Cancel
           </Button>
           <Button type="submit" disabled={isLoading}>
             {isLoading ? (
               <div className="flex items-center">
-                <CircularProgress size={20} className="mr-2" />
-                Adding...
+                <CircularProgress size={20} />
+                <span className="ml-2">Adding...</span>
               </div>
             ) : (
               "Add Stream"

@@ -1,11 +1,11 @@
 import React from "react";
-import { ClassValue } from "clsx";
 import { cn } from "../../lib/utils.ts"; // We'll need to create this utility
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
   variant?: "primary" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg";
-  className?: ClassValue;
+  className?: string | string[];
 }
 
 export const Button: React.FC<ButtonProps> = ({
