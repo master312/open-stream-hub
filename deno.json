@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "dev": "deno run dev:frontend & deno run dev:backend",
+    "dev": "deno run --allow-run --allow-read scripts/dev.ts",
     "dev:frontend": "cd frontend && deno task dev",
     "dev:backend": "cd backend && deno task dev"
   }
