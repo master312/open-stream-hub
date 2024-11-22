@@ -9,6 +9,9 @@ A web app meant to be run on server. Used to redirect single video stream to mul
 - Deno
 - ffmpeg
 
+First you need MongoDB running, then,
+
+
 To run all, in dev mode, run following from the projects root:
 ```bash
 deno task dev
