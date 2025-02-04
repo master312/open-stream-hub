@@ -33,8 +33,8 @@ async function main() {
   app.use(router);
 
   // Start HTTP server
-  const PORT = config.backendPort;
-  console.log(`Starting server on port ${PORT}....`);
+  const PORT = config.restApiPort;
+  console.log(`Starting rest api server on port ${PORT}....`);
 
   await app.listen({ port: Number(PORT) });
 }

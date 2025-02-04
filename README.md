@@ -40,34 +40,35 @@ This document describes how to build and deploy the Open Stream Hub stack in pro
 - At least 1GB of free RAM
 
 ## Environment Configuration
-There is already defulat env provided in root.
+Enviroments are located in root
 
-Different env files for different docker builds are in /docker/build_name folder.
 ```env
-# Frontend
-FRONTEND_PORT=3000
-FRONTEND_HOST=localhost
+MONGODB_URI=mongodb://localhost:27017/open-stream-hub
 
-# Backend
-MONGODB_URI=mongodb://localhost:27017
-MONGODB_DB_NAME=open-stream-hub
+# Port RTMP server will use to accept incoming streams
 RTMP_INJECT_PORT=1935
+
+# Public URL for the RTMP server.
+# If you are hosting service on 10.10.10.5
+# you probably want this set to rtmp://10.10.10.5
 RTMP_INJECT_PUBLIC_URL=rtmp://localhost
+
+# Root path for the RTMP injection
+# Final inject path will be RTMP_INJECT_PUBLIC_URL + RTMP_INJECT_LINK_ROOT
 RTMP_INJECT_LINK_ROOT=/live
-BACKEND_PORT=6636
+
+REST_API_HOST=http://localhost
+REST_API_PORT=6636
 
 FRONTEND_PORT=3000
-FRONTEND_BACKEND_HOST=http://localhost:6636
-FRONTEND_HOST=0.0.0.0
+
 ```
 
 ## Building the Application
 
-There are two ways to build the application:
+### Using Build Scripts
 
-### 1. Using Build Scripts
-
-The project includes convenience scripts for building:
+The project includes convenience scripts for building, run them from the project root.
 
 ```bash
 # Build everything (frontend and backend)
@@ -78,13 +79,6 @@ The project includes convenience scripts for building:
 
 # Build only backend
 ./scripts/build-backend.sh
-```
-
-### 2. Using Docker Compose
-
-```bash
-cd docker/production
-docker compose -f compose.production.yml build
 ```
 
 ## Deploying the Stack

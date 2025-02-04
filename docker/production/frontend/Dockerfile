@@ -30,7 +30,7 @@ RUN chmod +x /docker-entrypoint.sh
 
 # Environment variables
 ENV FRONTEND_PORT=3000
-ENV BACKEND_PORT=6636
+ENV REST_API_PORT=6636
 
 EXPOSE ${FRONTEND_PORT}
 

@@ -16,7 +16,7 @@ COPY common ../common
 RUN deno cache --lock=deno.lock main.ts
 
 # The port your app runs on
-EXPOSE $BACKEND_PORT
+EXPOSE $REST_API_PORT
 EXPOSE $RTMP_INJECT_PORT
 
 # Run the app

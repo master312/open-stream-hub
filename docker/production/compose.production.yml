@@ -2,30 +2,25 @@ version: "3.8"
 
 services:
   frontend:
-    build:
-      context: ../..
-      dockerfile: docker/production/frontend/Dockerfile
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
       - backend
     environment:
       - FRONTEND_PORT=${FRONTEND_PORT}
-      - FRONTEND_HOST=${FRONTEND_HOST}
+      - REST_API_HOST=${REST_API_HOST}
+      - REST_API_PORT=${REST_API_PORT}
 
   backend:
-    build:
-      context: ../..
-      dockerfile: docker/production/backend/Dockerfile
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "${REST_API_PORT}:${REST_API_PORT}"
       - "${RTMP_INJECT_PORT}:${RTMP_INJECT_PORT}"
     depends_on:
       - mongodb
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/${MONGODB_DB_NAME}
       - MONGODB_DB_NAME=${MONGODB_DB_NAME}
-      - BACKEND_PORT=${BACKEND_PORT}
+      - REST_API_PORT=${REST_API_PORT}
       - RTMP_INJECT_PORT=${RTMP_INJECT_PORT}
       - RTMP_INJECT_PUBLIC_URL=${RTMP_INJECT_PUBLIC_URL}
       - RTMP_INJECT_LINK_ROOT=${RTMP_INJECT_LINK_ROOT}

@@ -6,7 +6,11 @@ export default defineConfig({
   base: "/",
   server: {
     host: true, // Listen on all network interfaces
-    port: 3000,
+    port: parseInt(Deno.env.get("FRONTEND_PORT")),
+  },
+  define: {
+    "import.meta.env.REST_API_HOST": JSON.stringify(Deno.env.get("REST_API_HOST")),
+    "import.meta.env.REST_API_PORT": JSON.stringify(Deno.env.get("REST_API_PORT")),
   },
 });
 

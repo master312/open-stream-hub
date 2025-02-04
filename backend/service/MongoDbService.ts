@@ -1,24 +1,24 @@
 import { IService } from "./ServiceInterface.ts";
-import { process } from "node:process";
 import { MongoClient, Database, ObjectId } from "npm:mongodb@5.6.0";
 import { config } from "../config.ts";
 
 export class MongoDbService implements IService {
   private client: MongoClient;
   private db: Database;
-  private readonly dbName: string;
   private uri: string;
 
   constructor() {
     this.uri = config.mongodbUrl;
-    this.dbName = config.mongoDbName;
+    console.log("Config-MongoDB @ :", config.mongodbUrl);
   }
 
   async initialize(): Promise<void> {
     try {
       this.client = new MongoClient(this.uri);
       await this.client.connect();
-      this.db = this.client.db(this.dbName);
+      // Extract database name from URI
+      const dbName = new URL(this.uri).pathname.substr(1);
+      this.db = this.client.db(dbName);
       console.log("Successfully connected to MongoDB.");
       this.createIndexes();
       console.log("Database indexes created successfully");
@@ -44,9 +44,7 @@ export class MongoDbService implements IService {
 
   async findOne(collection: string, query: object): Promise<any> {
     try {
-      const result = await this.getCollection(collection).findOne(
-        this.processQuery(query),
-      );
+      const result = await this.getCollection(collection).findOne(this.processQuery(query));
       return this.processResult(result);
     } catch (error) {
       console.error(`Error in findOne operation for ${collection}:`, error);
@@ -56,9 +54,7 @@ export class MongoDbService implements IService {
 
   async find(collection: string, query: object): Promise<any[]> {
     try {
-      const results = await this.getCollection(collection)
-        .find(this.processQuery(query))
-        .toArray();
+      const results = await this.getCollection(collection).find(this.processQuery(query)).toArray();
       return results.map(this.processResult);
     } catch (error) {
       console.error(`Error in find operation for ${collection}:`, error);
@@ -68,9 +64,7 @@ export class MongoDbService implements IService {
 
   async insertOne(collection: string, data: any): Promise<any> {
     try {
-      const result = await this.getCollection(collection).insertOne(
-        this.processDataForInsert(data),
-      );
+      const result = await this.getCollection(collection).insertOne(this.processDataForInsert(data));
       return { ...data, id: result.insertedId.toString() };
     } catch (error) {
       console.error(`Error in insertOne operation for ${collection}:`, error);
@@ -80,10 +74,9 @@ export class MongoDbService implements IService {
 
   async updateOne(collection: string, query: object, data: any): Promise<any> {
     try {
-      const result = await this.getCollection(collection).updateOne(
-        this.processQuery(query),
-        { $set: this.processDataForUpdate(data) },
-      );
+      const result = await this.getCollection(collection).updateOne(this.processQuery(query), {
+        $set: this.processDataForUpdate(data),
+      });
       return result.modifiedCount > 0;
     } catch (error) {
       console.error(`Error in updateOne operation for ${collection}:`, error);
@@ -93,9 +86,7 @@ export class MongoDbService implements IService {
 
   async deleteOne(collection: string, query: object): Promise<boolean> {
     try {
-      const result = await this.getCollection(collection).deleteOne(
-        this.processQuery(query),
-      );
+      const result = await this.getCollection(collection).deleteOne(this.processQuery(query));
       return result.deletedCount > 0;
     } catch (error) {
       console.error(`Error in deleteOne operation for ${collection}:`, error);
