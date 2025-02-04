@@ -1,10 +1,13 @@
+#
+# This script is ment to be run from the project root
+#
+
 #!/bin/bash
 
-# Exit on any error
 set -e
 
 # Get the directory where the script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="scripts"
 
 echo "🚀 Building all images..."
 
