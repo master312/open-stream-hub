@@ -1,11 +1,9 @@
-async function startProcess(
-  command: string[],
-  name: string,
-): Promise<Deno.Process> {
+async function startProcess(command: string[], name: string, cwd: string): Promise<Deno.Process> {
   const process = new Deno.Command(command[0], {
     args: command.slice(1),
     stdout: "inherit",
     stderr: "inherit",
+    cwd: cwd,
   }).spawn();
 
   console.log(`[${name}] Started`);
@@ -13,18 +11,21 @@ async function startProcess(
 }
 
 async function main() {
+  const runType = Deno.env.get("RUN_TYPE");
+  console.log(`CONFIG RunningType: ${runType}`);
+
   const processes: Deno.Process[] = [];
 
   try {
-    // Start frontend
-    processes.push(
-      await startProcess(["deno", "task", "dev:frontend"], "Frontend"),
-    );
+    if (runType === "all" || runType === "front") {
+      console.log("Starting frontend...");
+      processes.push(await startProcess(["deno", "task", "dev"], "Frontend", "./frontend"));
+    }
 
-    // Start backend
-    processes.push(
-      await startProcess(["deno", "task", "dev:backend"], "Backend"),
-    );
+    if (runType === "all" || runType === "back") {
+      console.log("Starting backend...");
+      processes.push(await startProcess(["deno", "task", "dev"], "Backend", "./backend"));
+    }
 
     // Handle termination signals
     const cleanup = async () => {

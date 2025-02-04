@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --env=\"./.env\" --allow-run --allow-read scripts/dev.ts",
-    "dev:frontend": "cd frontend && deno task dev",
-    "dev:backend": "cd backend && deno task dev"
+    "dev": "RUN_TYPE=all deno run --env=\"./.env\" --allow-run --allow-read --allow-env scripts/dev.ts",
+    "dev:frontend": "RUN_TYPE=front deno run --env=\"./.env\" --allow-run --allow-read --allow-env scripts/dev.ts",
+    "dev:backend": "RUN_TYPE=back deno run --env=\"./.env\" --allow-run --allow-read --allow-env scripts/dev.ts"
   }
 }
