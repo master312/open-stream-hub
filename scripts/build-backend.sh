@@ -19,6 +19,8 @@ MONGODB_DB_NAME=${MONGODB_DB_NAME:-"open-stream-hub"}
 REGISTRY=${REGISTRY:-""}
 VERSION=${VERSION:-latest}
 
+AUTOMATIC_YES=${AUTOMATIC_YES:-"false"}
+
 # Construct image name
 IMAGE_NAME="${REGISTRY}open-stream-hub-backend:${VERSION}"
 
@@ -28,6 +30,15 @@ echo "   Backend Port: ${REST_API_PORT}"
 echo "   RTMP Port: ${RTMP_INJECT_PORT}"
 echo "   MongoDB URI: ${MONGODB_URI}"
 echo "   MongoDB DB Name: ${MONGODB_DB_NAME}"
+
+if [ "${AUTOMATIC_YES}" = "false" ]; then
+    read -p "Do you want to continue? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "⚠️  Aborting..."
+        exit 1
+    fi
+fi
 
 # Build the Docker image
 docker build \

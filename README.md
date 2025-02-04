@@ -40,7 +40,10 @@ This document describes how to build and deploy the Open Stream Hub stack in pro
 - At least 1GB of free RAM
 
 ## Environment Configuration
-Enviroments are located in root
+Enviroment files are located in root.
+
+KNOWN ISSUE: Some frontend variables are baked in while building production docker image.
+So if you later change them in docker-compose, it won't work. You'll have to rebuild frontend docker image.
 
 ```env
 MONGODB_URI=mongodb://localhost:27017/open-stream-hub
@@ -87,7 +90,7 @@ The project includes convenience scripts for building, run them from the project
 
 ```bash
 cd docker/production
-docker compose --env-file .env -f compose.production.yml up -d
+docker compose --env-file ../../.env.production -f compose.production.yml up -d
 ```
 
 ### Managing the Stack

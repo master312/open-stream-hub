@@ -1,16 +1,19 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { getConfig } from "./hack_config";
+
+const config = getConfig();
 
 export default defineConfig({
   plugins: [react()],
   base: "/",
   server: {
-    host: true, // Listen on all network interfaces
-    port: parseInt(Deno.env.get("FRONTEND_PORT")),
+    host: true,
+    port: parseInt(config.FRONTEND_PORT),
   },
   define: {
-    "import.meta.env.REST_API_HOST": JSON.stringify(Deno.env.get("REST_API_HOST")),
-    "import.meta.env.REST_API_PORT": JSON.stringify(Deno.env.get("REST_API_PORT")),
+    "import.meta.env.REST_API_HOST": JSON.stringify(config.REST_API_HOST),
+    "import.meta.env.REST_API_PORT": JSON.stringify(config.REST_API_PORT),
   },
 });
 

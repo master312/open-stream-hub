@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   frontend:
+    image: open-stream-hub-frontend:latest
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
@@ -12,6 +13,7 @@ services:
       - REST_API_PORT=${REST_API_PORT}
 
   backend:
+    image: open-stream-hub-backend:latest
     ports:
       - "${REST_API_PORT}:${REST_API_PORT}"
       - "${RTMP_INJECT_PORT}:${RTMP_INJECT_PORT}"
