@@ -2,7 +2,7 @@
 A web app meant to be run on server. Used to redirect single video stream to multiple destinations
 
 ## !!!! App is in development, use at your own risk. !!!!
-
+![img.png](img.png)
 # Deploy for development
 ### Requirements
 - MongoDB
