@@ -13,15 +13,7 @@ import {
 import { Line } from "react-chartjs-2";
 
 // Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface StreamAnalytics {
   runtime: string;
@@ -38,9 +30,7 @@ interface StreamAnalyticsProps {
   analytics: StreamAnalytics;
 }
 
-export const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
-  analytics,
-}) => {
+export const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({ analytics }) => {
   const chartData = {
     labels: analytics.viewerHistory.map((vh) => vh.time),
     datasets: [
@@ -98,6 +88,8 @@ export const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
         <div className="p-4 bg-background-hover rounded-lg">
           <div className="text-content-secondary text-sm">Runtime</div>
           <div className="text-content-primary text-lg font-medium mt-1">
+            TODO
+            <br />
             {analytics.runtime}
           </div>
         </div>
@@ -105,6 +97,8 @@ export const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
         <div className="p-4 bg-background-hover rounded-lg">
           <div className="text-content-secondary text-sm">Current Viewers</div>
           <div className="text-content-primary text-lg font-medium mt-1">
+            TODO
+            <br />
             {analytics.viewers}
           </div>
         </div>
@@ -112,6 +106,8 @@ export const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
         <div className="p-4 bg-background-hover rounded-lg">
           <div className="text-content-secondary text-sm">Bandwidth</div>
           <div className="text-content-primary text-lg font-medium mt-1">
+            TODO
+            <br />
             {analytics.bandwidth}
           </div>
         </div>
@@ -119,6 +115,8 @@ export const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
         <div className="p-4 bg-background-hover rounded-lg">
           <div className="text-content-secondary text-sm">CPU Usage</div>
           <div className="text-content-primary text-lg font-medium mt-1">
+            TODO
+            <br />
             {analytics.cpuUsage}%
           </div>
         </div>

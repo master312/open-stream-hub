@@ -60,11 +60,13 @@ RTMP_INJECT_PUBLIC_URL=rtmp://localhost
 # Final inject path will be RTMP_INJECT_PUBLIC_URL + RTMP_INJECT_LINK_ROOT
 RTMP_INJECT_LINK_ROOT=/live
 
+# Live priview thumbnails can be disabled to save resources
+REALTIME_THUMBNAIL_DISABLED=false
+
 REST_API_HOST=http://localhost
 REST_API_PORT=6636
 
 FRONTEND_PORT=3000
-
 ```
 
 ## Building the Application

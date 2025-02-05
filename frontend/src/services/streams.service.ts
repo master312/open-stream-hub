@@ -253,7 +253,7 @@ class StreamsService {
   // Helper method to get appropriate placeholder image or URL to stream priview
   getStreamPriviewOrPlaceholder(stream: StreamInstance): string {
     if (stream.state === "Live") {
-      return this.getFullPublicInjestUrl() + "/" + stream.apiKey;
+      return streamsApi.getStreamThumbnailUrl(stream.id);
     }
 
     // Status-specific placeholder images

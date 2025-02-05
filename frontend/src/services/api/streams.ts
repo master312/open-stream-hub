@@ -18,6 +18,10 @@ export const streamsApi = {
     return response.data;
   },
 
+  getStreamThumbnailUrl: (streamId: string): string => {
+    return `${apiClient.defaults.baseURL}/streams/${streamId}/thumbnail`;
+  },
+
   createStream: async (data: CreateStreamRequest): Promise<StreamInstance> => {
     const response = await apiClient.post<StreamInstance>("/streams", data);
     return response.data;

@@ -4,6 +4,7 @@ import { StreamMgrService } from "./StreamMgrService.ts";
 import { StreamCrudService } from "./StreamCrudService.ts";
 import { FfmpegRunnerService } from "./FfmpegRunnerService.ts";
 import { RtmpInjestService } from "./RtmpInjestService.ts";
+import { ThumbnailGeneratorService } from "./ThumbnailGeneratorService.ts";
 import { initRepositories } from "../repository/index.ts";
 
 class ServiceManager {
@@ -18,6 +19,7 @@ class ServiceManager {
     this.registerService("streamCrud", new StreamCrudService());
     this.registerService("ffmpegRunner", new FfmpegRunnerService());
     this.registerService("rtmpInjest", new RtmpInjestService());
+    this.registerService("thumbnailGenerator", new ThumbnailGeneratorService());
   }
 
   public static getInstance(): ServiceManager {
@@ -89,13 +91,9 @@ class ServiceManager {
 export const serviceManager = ServiceManager.getInstance();
 
 // A shitty manual export for all services.. Fine for now
-export const databaseService =
-  serviceManager.getService<MongoDbService>("database");
-export const streamMgrService =
-  serviceManager.getService<StreamMgrService>("streamMgr");
-export const streamCrudService =
-  serviceManager.getService<StreamCrudService>("streamCrud");
-export const ffmpegRunnerService =
-  serviceManager.getService<FfmpegRunnerService>("ffmpegRunner");
-export const rtmpInjestService =
-  serviceManager.getService<RtmpInjestService>("rtmpInjest");
+export const databaseService = serviceManager.getService<MongoDbService>("database");
+export const streamMgrService = serviceManager.getService<StreamMgrService>("streamMgr");
+export const streamCrudService = serviceManager.getService<StreamCrudService>("streamCrud");
+export const ffmpegRunnerService = serviceManager.getService<FfmpegRunnerService>("ffmpegRunner");
+export const rtmpInjestService = serviceManager.getService<RtmpInjestService>("rtmpInjest");
+export const thumbnailGeneratorService = serviceManager.getService<ThumbnailGeneratorService>("thumbnailGenerator");

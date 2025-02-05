@@ -1,6 +1,6 @@
 import { Router } from "npm:express";
 import type { Request, Response } from "npm:express";
-import { streamCrudService, streamMgrService } from "../service/index.ts";
+import { streamCrudService, streamMgrService, thumbnailGeneratorService } from "../service/index.ts";
 import { CreateStreamRequest } from "../../common/dto.ts";
 import { config } from "../config.ts";
 
@@ -9,10 +9,7 @@ export function createStreamRoutes(router: Router) {
     .get("/api/pub_injest_url", async (_req: Request, res: Response) => {
       try {
         res.json({
-          url:
-            config.injestRtmpServer.publicUrl +
-            "/" +
-            config.injestRtmpServer.linkRoot,
+          url: config.injestRtmpServer.publicUrl + "/" + config.injestRtmpServer.linkRoot,
         });
       } catch (error) {
         console.error("Error fetching public ingest url:", error);
@@ -48,9 +45,7 @@ export function createStreamRoutes(router: Router) {
       try {
         const { name } = req.body as CreateStreamRequest;
         if (!name) {
-          res
-            .status(400)
-            .json({ error: "Invalid request. 'name' is required." });
+          res.status(400).json({ error: "Invalid request. 'name' is required." });
           return;
         }
 
@@ -101,45 +96,48 @@ export function createStreamRoutes(router: Router) {
       }
     })
 
-    .post(
-      "/api/streams/:id/destinations",
-      async (req: Request, res: Response) => {
-        try {
-          const stream = await streamCrudService.addDestination(
-            req.params.id,
-            req.body,
-          );
-          res.json(stream);
-        } catch (error) {
-          console.error("Error adding destination:", error);
-          if (error.message.includes("not found")) {
-            res.status(404).json({ error: error.message });
-          } else {
-            res.status(400).json({ error: "Invalid destination data" });
-          }
+    .post("/api/streams/:id/destinations", async (req: Request, res: Response) => {
+      try {
+        const stream = await streamCrudService.addDestination(req.params.id, req.body);
+        res.json(stream);
+      } catch (error) {
+        console.error("Error adding destination:", error);
+        if (error.message.includes("not found")) {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(400).json({ error: "Invalid destination data" });
         }
-      },
-    )
+      }
+    })
 
-    .delete(
-      "/api/streams/:id/destinations/:destinationId",
-      async (req: Request, res: Response) => {
-        try {
-          const stream = await streamCrudService.removeDestination(
-            req.params.id,
-            req.params.destinationId,
-          );
-          res.json(stream);
-        } catch (error) {
-          console.error("Error removing destination:", error);
-          if (error.message.includes("not found")) {
-            res.status(404).json({ error: error.message });
-          } else {
-            res.status(400).json({ error: "Failed to remove destination" });
-          }
+    .delete("/api/streams/:id/destinations/:destinationId", async (req: Request, res: Response) => {
+      try {
+        const stream = await streamCrudService.removeDestination(req.params.id, req.params.destinationId);
+        res.json(stream);
+      } catch (error) {
+        console.error("Error removing destination:", error);
+        if (error.message.includes("not found")) {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(400).json({ error: "Failed to remove destination" });
         }
-      },
-    );
+      }
+    })
+
+    .get("/api/streams/:streamId/thumbnail", async (req, res) => {
+      const streamId = req.params.streamId;
+      const thumbnail = await thumbnailGeneratorService.getThumbnail(streamId);
+
+      if (!thumbnail) {
+        return res.status(404).send("Thumbnail not found");
+      }
+
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+      res.send(thumbnail);
+    });
 
   return router;
 }
