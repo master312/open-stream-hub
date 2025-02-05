@@ -35,16 +35,18 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
     return `${hours}h ${minutes}m`;
   };
 
-  const thumbnailUrl = streamsService.getStreamThumbnailOrPlaceholder(stream);
+  const priviewUrl = streamsService.getStreamPriviewOrPlaceholder(stream);
   const isVideoUrl = (url: string) => {
     return url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".webm");
+    // return url.toLowerCase().startsWith("rtmp");
   };
 
   const renderMedia = () => {
-    if (isVideoUrl(thumbnailUrl)) {
-      return <video src={thumbnailUrl} className="w-full h-full object-cover rounded-t-lg" muted loop autoPlay playsInline />;
+    if (isVideoUrl(priviewUrl)) {
+      return <video src={priviewUrl} className="w-full h-full object-cover rounded-t-lg" muted loop autoPlay playsInline />;
     }
-    return <img src={thumbnailUrl} alt={stream.name} className="w-full h-full object-cover rounded-t-lg" />;
+
+    return <img src={priviewUrl} alt={stream.name} className="w-full h-full object-cover rounded-t-lg" />;
   };
 
   return (

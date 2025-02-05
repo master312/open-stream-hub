@@ -19,7 +19,6 @@ export interface StreamInstance {
   error?: Error;
   createdAt: Date;
   startedAt?: Date;
-  thumbnail?: string;
   destinations: StreamDestination[];
   ffmpegFlags?: string; // FFmpeg flags to use for all destinations
 }

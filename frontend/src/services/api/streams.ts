@@ -24,16 +24,12 @@ export const streamsApi = {
   },
 
   startStream: async (id: string): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>(
-      `/streams/${id}/start`,
-    );
+    const response = await apiClient.post<StreamInstance>(`/streams/${id}/start`);
     return response.data;
   },
 
   stopStream: async (id: string): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>(
-      `/streams/${id}/stop`,
-    );
+    const response = await apiClient.post<StreamInstance>(`/streams/${id}/stop`);
     return response.data;
   },
 
@@ -41,38 +37,14 @@ export const streamsApi = {
     await apiClient.delete(`/streams/${id}`);
   },
 
-  addDestination: async (
-    streamId: string,
-    destination: Omit<StreamDestination, "id">,
-  ): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>(
-      `/streams/${streamId}/destinations`,
-      destination,
-    );
+  addDestination: async (streamId: string, destination: Omit<StreamDestination, "id">): Promise<StreamInstance> => {
+    const response = await apiClient.post<StreamInstance>(`/streams/${streamId}/destinations`, destination);
     return response.data;
   },
 
-  removeDestination: async (
-    streamId: string,
-    destinationId: string,
-  ): Promise<StreamInstance> => {
-    console.log(
-      "Removing destination " + destinationId + " from stream " + streamId,
-    );
-    const response = await apiClient.delete<StreamInstance>(
-      `/streams/${streamId}/destinations/${destinationId}`,
-    );
-    return response.data;
-  },
-
-  getStreamThumbnailUrl: (streamId: string): string => {
-    return `${apiClient.defaults.baseURL}/streams/${streamId}/thumbnail`;
-  },
-
-  getStreamThumbnail: async (streamId: string): Promise<Blob> => {
-    const response = await apiClient.get(`/streams/${streamId}/thumbnail`, {
-      responseType: "blob",
-    });
+  removeDestination: async (streamId: string, destinationId: string): Promise<StreamInstance> => {
+    console.log("Removing destination " + destinationId + " from stream " + streamId);
+    const response = await apiClient.delete<StreamInstance>(`/streams/${streamId}/destinations/${destinationId}`);
     return response.data;
   },
 };

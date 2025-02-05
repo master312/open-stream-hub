@@ -250,20 +250,10 @@ class StreamsService {
     }
   }
 
-  async fetchThumbnail(streamId: string): Promise<Blob> {
-    try {
-      return await streamsApi.getStreamThumbnail(streamId);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to fetch thumbnail");
-      this.error.next(error);
-      throw error;
-    }
-  }
-
-  // Helper method to get appropriate thumbnail URL based on stream status
-  getStreamThumbnailOrPlaceholder(stream: StreamInstance): string {
+  // Helper method to get appropriate placeholder image or URL to stream priview
+  getStreamPriviewOrPlaceholder(stream: StreamInstance): string {
     if (stream.state === "Live") {
-      return streamsApi.getStreamThumbnailUrl(stream.id);
+      return this.getFullPublicInjestUrl() + "/" + stream.apiKey;
     }
 
     // Status-specific placeholder images

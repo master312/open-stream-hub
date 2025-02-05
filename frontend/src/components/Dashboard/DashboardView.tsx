@@ -81,7 +81,6 @@ export const DashboardView: React.FC = () => {
               key={stream.id}
               stream={{
                 ...stream,
-                thumbnail: `https://picsum.photos/seed/${stream.id}/800/600`, // Placeholder thumbnail
                 name: stream.name,
                 destinations: stream.destinations || [],
               }}
