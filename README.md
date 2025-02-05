@@ -1,5 +1,5 @@
 # open-stream-hub
-A web app meant to be simle, and run on server.
+A web app meant to be simple, and run on server.
 Uses ffmpeg to redirect input stream from RTMP to other platforms (like Twitch, YouTube, etc).
 Can also be used just as RTMP server it self.
 
