@@ -18,8 +18,8 @@ export const DashboardView: React.FC = () => {
 
   useEffect(() => {
     const subscription = streamsService.streams$.subscribe(setStreams);
-    const loadingSubscription = streamsService.loading$.subscribe(setLoading);
-    const errorSubscription = streamsService.error$.subscribe(setError);
+    // const loadingSubscription = streamsService.loading$.subscribe(setLoading);
+    // const errorSubscription = streamsService.error$.subscribe(setError);
 
     streamsService.fetchStreams().catch((error) => {
       toast.error(`Failed to fetch streams: ${error.message}`);
@@ -27,8 +27,8 @@ export const DashboardView: React.FC = () => {
 
     return () => {
       subscription.unsubscribe();
-      loadingSubscription.unsubscribe();
-      errorSubscription.unsubscribe();
+      // loadingSubscription.unsubscribe();
+      // errorSubscription.unsubscribe();
     };
   }, []);
 
@@ -42,8 +42,7 @@ export const DashboardView: React.FC = () => {
       setIsAddModalOpen(false);
       toast.success("Stream created successfully");
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to create stream";
+      const errorMessage = error instanceof Error ? error.message : "Failed to create stream";
       toast.error(errorMessage);
     }
   };
@@ -61,12 +60,8 @@ export const DashboardView: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-content-primary">
-              Streams
-            </h1>
-            <p className="mt-1 text-sm text-content-secondary">
-              Manage your active streaming endpoints
-            </p>
+            <h1 className="text-2xl font-semibold text-content-primary">Streams</h1>
+            <p className="mt-1 text-sm text-content-secondary">Manage your active streaming endpoints</p>
           </div>
           <Button onClick={() => setIsAddModalOpen(true)}>
             <PlusIcon className="w-5 h-5 mr-2" />
@@ -95,11 +90,7 @@ export const DashboardView: React.FC = () => {
           ))}
         </div>
 
-        <AddStreamModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onSubmit={handleAddStream}
-        />
+        <AddStreamModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddStream} />
       </div>
     </div>
   );

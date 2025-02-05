@@ -1,7 +1,7 @@
 import { IService } from "./ServiceInterface.ts";
 import EventEmitter from "node:events";
 import { streamMgrService } from "./index.ts";
-import NodeMediaServer from "node-media-server";
+import NodeMediaServer from "npm:node-media-server";
 import { config } from "../config.ts";
 import { streamsRepository } from "../repository/index.ts";
 
@@ -26,7 +26,9 @@ export class RtmpInjestService implements IService {
     this.nms = new NodeMediaServer(config.injestRtmpServer);
 
     // Setup event handlers
-    this.nms.on("preConnect", this.nmsOnPreConnect.bind(this));
+    // this.nms.on("preConnect", (id, args) // TODO: Check blacklist and stuff here
+    // this.nms.on("prePlay", (id, StreamPath, args) // TODO: Check if watching from allowed path
+    this.nms.on("prePublish", this.nmsOnPrePublish.bind(this));
     this.nms.on("postPublish", this.nmsOnPostPublish.bind(this));
     this.nms.on("donePublish", this.nmsOnDonePublish.bind(this));
 
@@ -50,41 +52,36 @@ export class RtmpInjestService implements IService {
     session.reject();
   }
 
-  private async nmsOnPreConnect(id: string, params: any): Promise<void> {
+  private async nmsOnPrePublish(id: string, streamPath: string, params: any): Promise<void> {
     const session = this.nms.getSession(id);
-    if (!this.acceptEnabled || !params["app"]) {
+    if (!this.acceptEnabled || !streamPath) {
+      console.log("Rejected. Reason: ", this.acceptEnabled, " | ", streamPath);
       session.reject();
       return;
     }
 
-    const isPublisher = params.flashVer?.includes("FMLE");
-
-    const streamKey = this.extractStreamKey(params["app"]);
+    const streamKey = this.extractStreamKey(streamPath);
     if (!streamKey) {
       session.reject();
+      console.log("Rejected. Reason: Invalid stream key");
       return;
     }
 
     const stream = await streamsRepository.findByApiKey(streamKey);
     if (!stream) {
       session.reject(); // Only streams in waiting state are accepted
+      console.log("Rejected. Reason: Stream not found");
       return;
     }
 
-    if (isPublisher && stream.state !== "Waiting") {
+    if (stream.state !== "Waiting") {
       session.reject();
-      return;
-    } else if (!isPublisher && stream.state !== "Live") {
-      session.reject();
+      console.log("Rejected. Reason: Stream not in waiting state");
       return;
     }
   }
 
-  private async nmsOnPostPublish(
-    id: string,
-    streamPath: string,
-    params: any,
-  ): Promise<void> {
+  private async nmsOnPostPublish(id: string, streamPath: string, params: any): Promise<void> {
     const session = this.nms.getSession(id);
     const streamKey = this.extractStreamKey(streamPath);
     if (!streamKey) {
@@ -103,11 +100,7 @@ export class RtmpInjestService implements IService {
     this.eventEmitter.emit("injest:start", stream);
   }
 
-  private async nmsOnDonePublish(
-    id: string,
-    streamPath: string,
-    params: any,
-  ): Promise<void> {
+  private async nmsOnDonePublish(id: string, streamPath: string, params: any): Promise<void> {
     const streamKey = this.extractStreamKey(streamPath);
     if (!streamKey) return;
     const stream = await streamsRepository.findByApiKey(streamKey);

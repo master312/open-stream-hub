@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import { StatusBadge } from "../shared/StatusBadge";
-import {
-  SignalIcon,
-  ArrowPathIcon,
-  GlobeAltIcon,
-  ClipboardDocumentIcon,
-} from "@heroicons/react/24/outline";
+import { SignalIcon, ArrowPathIcon, GlobeAltIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { StreamInstance } from "../../types/stream.ts";
 import { streamsService } from "../../services/streams.service";
 
@@ -23,9 +18,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
 
   const copyRtmpEndpoint = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(
-      streamsService.getFullPublicInjestUrl(stream.apiKey),
-    );
+    navigator.clipboard.writeText(streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -44,31 +37,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
 
   const thumbnailUrl = streamsService.getStreamThumbnailOrPlaceholder(stream);
   const isVideoUrl = (url: string) => {
-    return (
-      url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".webm")
-    );
+    return url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".webm");
   };
 
   const renderMedia = () => {
     if (isVideoUrl(thumbnailUrl)) {
-      return (
-        <video
-          src={thumbnailUrl}
-          className="w-full h-full object-cover rounded-t-lg"
-          muted
-          loop
-          autoPlay
-          playsInline
-        />
-      );
+      return <video src={thumbnailUrl} className="w-full h-full object-cover rounded-t-lg" muted loop autoPlay playsInline />;
     }
-    return (
-      <img
-        src={thumbnailUrl}
-        alt={stream.name}
-        className="w-full h-full object-cover rounded-t-lg"
-      />
-    );
+    return <img src={thumbnailUrl} alt={stream.name} className="w-full h-full object-cover rounded-t-lg" />;
   };
 
   return (
@@ -87,31 +63,20 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
         </div>
         {stream.state === "Live" && stream.startedAt && (
           <div className="absolute bottom-3 right-3 bg-background-primary/75 px-2 py-1 rounded">
-            <span className="text-content-primary text-sm">
-              {getStreamDuration()}
-            </span>
+            <span className="text-content-primary text-sm">{getStreamDuration()}</span>
           </div>
         )}
       </div>
 
       <div className="p-4 space-y-4">
-        <h3 className="font-medium text-lg text-content-primary truncate">
-          {stream.name}
-        </h3>
+        <h3 className="font-medium text-lg text-content-primary truncate">{stream.name}</h3>
 
         <div className="space-y-2">
-          <div
-            className="flex items-center text-sm text-content-secondary group cursor-pointer"
-            onClick={copyRtmpEndpoint}
-          >
+          <div className="flex items-center text-sm text-content-secondary group cursor-pointer" onClick={copyRtmpEndpoint}>
             <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-            <span className="truncate">
-              {streamsService.getFullPublicInjestUrl(stream.apiKey)}
-            </span>
+            <span className="truncate">{streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey}</span>
             <ClipboardDocumentIcon className="w-4 h-4 ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100" />
-            {copied && (
-              <span className="ml-2 text-xs text-green-500">Copied!</span>
-            )}
+            {copied && <span className="ml-2 text-xs text-green-500">Copied!</span>}
           </div>
 
           <div className="flex items-center text-sm text-content-secondary">

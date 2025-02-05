@@ -8,7 +8,7 @@ import { streamsApi } from "./api/streams";
 
 class StreamsService {
   // Shitty polling sollution  for now... TODO: Implement websockets in the future
-  private pollingInterval = 4000; // 4 sec
+  private pollingInterval = 5000; // 4 sec
 
   private streams = new BehaviorSubject<StreamInstance[]>([]);
   private currentStream = new BehaviorSubject<StreamInstance | null>(null);
@@ -37,12 +37,8 @@ class StreamsService {
     return this.currentStream.value;
   }
 
-  getFullPublicInjestUrl(streamRtmpEndpoint: string) {
-    // Replace the double slashes with single slashes, but perserve the protocol
-    return `${this.publicInjestUrl}/${streamRtmpEndpoint}`.replace(
-      /(?<!:)\/\//g,
-      "",
-    );
+  getFullPublicInjestUrl() {
+    return this.publicInjestUrl;
   }
 
   isLoading() {
@@ -60,18 +56,28 @@ class StreamsService {
   error$ = this.error.asObservable();
 
   async fetchStreams() {
-    await this.fetchPublicInjestUrl();
     try {
       this.loading.next(true);
       this.error.next(null);
 
-      const streams = await streamsApi.getStreams();
-      this.streams.next(streams);
+      const newStreams = await streamsApi.getStreams();
+      const currentStreams = this.streams.value;
 
-      return streams;
+      // Check if any stream states have changed
+      const hasStateChanges = newStreams.some((newStream) => {
+        const currentStream = currentStreams.find((s) => s.id === newStream.id);
+        return currentStream?.state !== newStream.state;
+      });
+
+      // Only update if there are state changes
+      if (hasStateChanges) {
+        console.log("Pooling streams, changes detected. Re-rendering");
+        this.streams.next(newStreams);
+      }
+
+      return newStreams;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to fetch streams");
+      const error = err instanceof Error ? err : new Error("Failed to fetch streams");
       this.error.next(error);
       throw error;
     } finally {
@@ -90,8 +96,7 @@ class StreamsService {
 
       return stream;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to fetch stream");
+      const error = err instanceof Error ? err : new Error("Failed to fetch stream");
       this.error.next(error);
       throw error;
     } finally {
@@ -110,8 +115,7 @@ class StreamsService {
 
       return stream;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to create stream");
+      const error = err instanceof Error ? err : new Error("Failed to create stream");
       this.error.next(error);
       throw error;
     } finally {
@@ -135,8 +139,7 @@ class StreamsService {
       console.log("Stream started " + stream.id);
       return stream;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to start stream");
+      const error = err instanceof Error ? err : new Error("Failed to start stream");
       this.error.next(error);
       throw error;
     } finally {
@@ -158,8 +161,7 @@ class StreamsService {
 
       return stream;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to stop stream");
+      const error = err instanceof Error ? err : new Error("Failed to stop stream");
       this.error.next(error);
       throw error;
     } finally {
@@ -183,8 +185,7 @@ class StreamsService {
         this.currentStream.next(null);
       }
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to delete stream");
+      const error = err instanceof Error ? err : new Error("Failed to delete stream");
       this.error.next(error);
       throw error;
     } finally {
@@ -192,10 +193,7 @@ class StreamsService {
     }
   }
 
-  async addDestination(
-    streamId: string,
-    destination: Omit<StreamDestination, "id">,
-  ) {
+  async addDestination(streamId: string, destination: Omit<StreamDestination, "id">) {
     try {
       this.loading.next(true);
       this.error.next(null);
@@ -210,8 +208,7 @@ class StreamsService {
       console.log("Stream added destination " + stream.id);
       return stream;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to add destination");
+      const error = err instanceof Error ? err : new Error("Failed to add destination");
       this.error.next(error);
       throw error;
     } finally {
@@ -224,10 +221,7 @@ class StreamsService {
       this.loading.next(true);
       this.error.next(null);
 
-      const stream = await streamsApi.removeDestination(
-        streamId,
-        destinationId,
-      );
+      const stream = await streamsApi.removeDestination(streamId, destinationId);
       this.updateStreamInList(stream);
 
       if (this.currentStream.value?.id === streamId) {
@@ -237,8 +231,7 @@ class StreamsService {
       console.log("Stream removed destination " + stream.id);
       return stream;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to remove destination");
+      const error = err instanceof Error ? err : new Error("Failed to remove destination");
       this.error.next(error);
       throw error;
     } finally {
@@ -248,18 +241,20 @@ class StreamsService {
 
   private updateStreamInList(updatedStream: StreamInstance) {
     const currentStreams = this.streams.value;
-    const updatedStreams = currentStreams.map((stream) =>
-      stream.id === updatedStream.id ? updatedStream : stream,
-    );
-    this.streams.next(updatedStreams);
+    const existingStream = currentStreams.find((s) => s.id === updatedStream.id);
+
+    // Only update if state has changed
+    if (existingStream?.state !== updatedStream.state) {
+      const updatedStreams = currentStreams.map((stream) => (stream.id === updatedStream.id ? updatedStream : stream));
+      this.streams.next(updatedStreams);
+    }
   }
 
   async fetchThumbnail(streamId: string): Promise<Blob> {
     try {
       return await streamsApi.getStreamThumbnail(streamId);
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to fetch thumbnail");
+      const error = err instanceof Error ? err : new Error("Failed to fetch thumbnail");
       this.error.next(error);
       throw error;
     }
@@ -278,9 +273,7 @@ class StreamsService {
       Stopped: "/stream-status-stopped.png", // Stop/pause icon image
     };
 
-    return (
-      statusPlaceholders[stream.state] || "/stream-status-invalid-state.png  "
-    );
+    return statusPlaceholders[stream.state] || "/stream-status-invalid-state.png  ";
   }
 
   private async fetchPublicInjestUrl() {
@@ -289,8 +282,7 @@ class StreamsService {
       const url = await streamsApi.getPublicIngestUrl();
       this.publicInjestUrl = url;
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to fetch public url");
+      const error = err instanceof Error ? err : new Error("Failed to fetch public url");
       this.error.next(error);
       throw error;
     } finally {

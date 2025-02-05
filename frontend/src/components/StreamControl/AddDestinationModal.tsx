@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal } from "../shared/Modal";
 import { Button } from "../shared/Button";
-import { StreamDestination } from "../../types/stream";
+import { StreamDestination, StreamDestinationPlatform, StreamDestinationPlatformNames } from "../../types/stream";
 import { CircularProgress } from "../shared/CircularProgress";
 
 interface AddDestinationModalProps {
@@ -10,13 +10,8 @@ interface AddDestinationModalProps {
   onSubmit: (destination: Omit<StreamDestination, "id">) => Promise<void>;
 }
 
-export const AddDestinationModal: React.FC<AddDestinationModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-}) => {
-  const [selectedPlatform, setSelectedPlatform] =
-    useState<StreamDestination["platform"]>("twitch");
+export const AddDestinationModal: React.FC<AddDestinationModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const [selectedPlatform, setSelectedPlatform] = useState<StreamDestination["platform"]>("twitch");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -47,17 +42,15 @@ export const AddDestinationModal: React.FC<AddDestinationModalProps> = ({
           <label className="text-sm text-content-secondary">Platform</label>
           <select
             value={selectedPlatform}
-            onChange={(e) =>
-              setSelectedPlatform(
-                e.target.value as StreamDestination["platform"],
-              )
-            }
+            onChange={(e) => setSelectedPlatform(e.target.value as StreamDestinationPlatform)}
             className="w-full bg-background-primary border border-border-primary rounded-lg px-3 py-2
                      text-content-primary mt-1 focus:outline-none focus:ring-2 focus:ring-content-accent"
           >
-            <option value="twitch">Twitch</option>
-            <option value="youtube">YouTube</option>
-            <option value="custom_rtmp">Custom RTMP</option>
+            {(Object.keys(StreamDestinationPlatformNames) as StreamDestinationPlatform[]).map((platform) => (
+              <option key={platform} value={platform}>
+                {StreamDestinationPlatformNames[platform]}
+              </option>
+            ))}
           </select>
         </div>
 

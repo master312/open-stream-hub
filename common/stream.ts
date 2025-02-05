@@ -1,6 +1,15 @@
 export type StreamStatus = "Live" | "Waiting" | "Stopped";
 export type StreamDestinationState = "Disconnected" | "Connecting" | "Live";
 
+export type StreamDestinationPlatform = "youtube" | "twitch" | "facebook" | "custom_rtmp";
+
+export const StreamDestinationPlatformNames: Record<StreamDestinationPlatform, string> = {
+  youtube: "YouTube",
+  twitch: "Twitch",
+  facebook: "Facebook",
+  custom_rtmp: "Custom RTMP",
+} as const;
+
 // For now, these are used for DTOs and DB Models
 export interface StreamInstance {
   id: string;
@@ -17,7 +26,7 @@ export interface StreamInstance {
 
 export interface StreamDestination {
   id: string; // Unique per stream!
-  platform: "youtube" | "twitch" | "custom_rtmp";
+  platform: StreamDestinationPlatform;
   streamKey: string;
   serverUrl: string;
   state: StreamDestinationState;
