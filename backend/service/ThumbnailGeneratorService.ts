@@ -2,7 +2,6 @@ import { IService } from "./ServiceInterface.ts";
 import { spawn, ChildProcess } from "node:child_process";
 import { rtmpInjestService } from "./index.ts";
 import { getStreamInstanceInternalRtmpUrl } from "../utils/stream.ts";
-import { ensureDir } from "https://deno.land/std/fs/ensure_dir.ts";
 import { readFile } from "node:fs/promises";
 import { config } from "../config.ts";
 
@@ -30,7 +29,13 @@ export class ThumbnailGeneratorService implements IService {
     console.log("[ThumbnailGenerator] Initializing service");
 
     // Ensure thumbnails directory exists
-    await ensureDir(THUMBNAILS_DIR);
+    try {
+      await Deno.mkdir(THUMBNAILS_DIR, { recursive: true });
+    } catch (error) {
+      if (!(error instanceof Deno.errors.AlreadyExists)) {
+        throw error;
+      }
+    }
 
     rtmpInjestService.eventEmitter.on("injest:start", async (stream) => {
       console.log(`[ThumbnailGenerator] Starting generation for stream ${stream.id}`);
