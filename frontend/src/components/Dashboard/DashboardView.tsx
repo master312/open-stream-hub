@@ -13,8 +13,8 @@ export const DashboardView: React.FC = () => {
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [streams, setStreams] = useState<StreamInstance[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [loading] = useState(false);
+  const [error] = useState<Error | null>(null);
 
   useEffect(() => {
     const subscription = streamsService.streams$.subscribe(setStreams);

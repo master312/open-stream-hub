@@ -90,6 +90,14 @@ The project includes convenience scripts for building, run them from the project
 
 ## Deploying the Stack
 
+
+# WARNING #
+####
+- The env variables
+- REST_API_HOST=
+- REST_API_PORT=
+- baked in frontend image on building... So you'll need to rebuild frontend image if changing. Sorry :( frontend needs rewriting...
+
 ### Starting the Stack
 
 ```bash
