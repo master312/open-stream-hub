@@ -14,12 +14,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
   const [thumbnailRefresh, setThumbnailRefresh] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setThumbnailRefresh((prev) => prev + 1);
-    }, 2000);
+    if (stream.state === "Live") {
+      const interval = setInterval(() => {
+        setThumbnailRefresh((prev) => prev + 1);
+      }, 2000);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }
+  }, [stream.state]);
 
   const handleClick = () => {
     onClick(stream.id);
@@ -44,7 +46,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
     return `${hours}h ${minutes}m`;
   };
 
-  const priviewUrl = `${streamsService.getStreamPriviewOrPlaceholder(stream)}?refresh=${thumbnailRefresh}`;
+  const priviewUrl = `${streamsService.getStreamPriviewOrPlaceholder(stream)}`;
   const isVideoUrl = (url: string) => {
     return url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".webm");
     // return url.toLowerCase().startsWith("rtmp");
