@@ -1,7 +1,7 @@
 import { StreamInstance, StreamDestination } from "../models/stream.ts";
 import { IService } from "./ServiceInterface.ts";
 import { streamsRepository } from "../repository/index.ts";
-import { crypto } from "crypto";
+import * as mod from "node:crypto";
 import { config } from "../config.ts";
 
 export class StreamCrudService implements IService {
@@ -40,9 +40,7 @@ export class StreamCrudService implements IService {
     // PH. Just throw here if destination is invalid.
   }
 
-  async createStream(
-    data: Omit<StreamInstance, "id" | "apiKey" | "state" | "createdAt">,
-  ): Promise<StreamInstance> {
+  async createStream(data: Omit<StreamInstance, "id" | "apiKey" | "state" | "createdAt">): Promise<StreamInstance> {
     const apiKey = await this.generateUniqueApiKey();
 
     // Validate destinations if any
@@ -61,10 +59,7 @@ export class StreamCrudService implements IService {
     return await streamsRepository.create(streamData);
   }
 
-  async updateStream(
-    id: string,
-    data: Partial<StreamInstance>,
-  ): Promise<boolean> {
+  async updateStream(id: string, data: Partial<StreamInstance>): Promise<boolean> {
     const existingStream = await streamsRepository.findById(id);
     if (!existingStream) {
       throw new Error(`Stream with id ${id} not found`);
@@ -109,10 +104,7 @@ export class StreamCrudService implements IService {
     return await streamsRepository.findByApiKey(apiKey);
   }
 
-  async addDestination(
-    streamId: string,
-    destination: Omit<StreamDestination, "id">,
-  ): Promise<StreamInstance> {
+  async addDestination(streamId: string, destination: Omit<StreamDestination, "id">): Promise<StreamInstance> {
     const stream = await streamsRepository.findById(streamId);
     if (!stream) {
       throw new Error(`Stream with id ${streamId} not found`);
@@ -154,30 +146,21 @@ export class StreamCrudService implements IService {
     return updatedStream;
   }
 
-  async removeDestination(
-    streamId: string,
-    destinationId: string,
-  ): Promise<StreamInstance> {
+  async removeDestination(streamId: string, destinationId: string): Promise<StreamInstance> {
     const stream = await streamsRepository.findById(streamId);
     if (!stream) {
       throw new Error(`Stream with id ${streamId} not found`);
     }
 
     this.validateStreamState(stream, "remove destination from");
-    const destinationIndex = stream.destinations.findIndex(
-      (d) => d.id === destinationId,
-    );
+    const destinationIndex = stream.destinations.findIndex((d) => d.id === destinationId);
 
     if (destinationIndex === -1) {
-      throw new Error(
-        `Destination with id ${destinationId} not found in stream`,
-      );
+      throw new Error(`Destination with id ${destinationId} not found in stream`);
     }
 
     // Remove destination
-    const updatedDestinations = stream.destinations.filter(
-      (d) => d.id !== destinationId,
-    );
+    const updatedDestinations = stream.destinations.filter((d) => d.id !== destinationId);
 
     // Update stream with new destinations
     const updated = await streamsRepository.update(streamId, {
@@ -208,14 +191,10 @@ export class StreamCrudService implements IService {
 
     this.validateStreamState(stream, "update destination in");
 
-    const destinationIndex = stream.destinations.findIndex(
-      (d) => d.id === destinationId,
-    );
+    const destinationIndex = stream.destinations.findIndex((d) => d.id === destinationId);
 
     if (destinationIndex === -1) {
-      throw new Error(
-        `Destination with id ${destinationId} not found in stream`,
-      );
+      throw new Error(`Destination with id ${destinationId} not found in stream`);
     }
 
     const updatedDestination = {
