@@ -244,6 +244,20 @@ class StreamsService {
     }
   }
 
+  async restartDestination(streamId: string, destinationId: string) {
+    try {
+      const stream = await streamsApi.restartDestination(streamId, destinationId);
+      console.log("Stream restarted destination " + stream.id);
+      return stream;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Failed to restart destination");
+      this.error.next(error);
+      throw error;
+    } finally {
+      this.loading.next(false);
+    }
+  }
+
   private updateStreamInList(updatedStream: StreamInstance) {
     const currentStreams = this.streams.value;
     const existingStream = currentStreams.find((s) => s.id === updatedStream.id);

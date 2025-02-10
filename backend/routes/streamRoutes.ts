@@ -1,6 +1,6 @@
 import { Router } from "npm:express";
 import type { Request, Response } from "npm:express";
-import { streamCrudService, streamMgrService, thumbnailGeneratorService } from "../service/index.ts";
+import { streamCrudService, streamMgrService, thumbnailGeneratorService, ffmpegRunnerService } from "../service/index.ts";
 import { CreateStreamRequest } from "../../common/dto.ts";
 import { config } from "../config.ts";
 
@@ -121,6 +121,23 @@ export function createStreamRoutes(router: Router) {
           res.status(404).json({ error: error.message });
         } else {
           res.status(400).json({ error: "Failed to remove destination" });
+        }
+      }
+    })
+
+    // Restart a single destination stream
+    .post("/api/streams/:streamId/destinations/:destinationId/restart", async (req, res) => {
+      const streamId = req.params.streamId;
+      const destinationId = req.params.destinationId;
+      try {
+        await ffmpegRunnerService.restartDestination(streamId, destinationId);
+        res.status(200).json({ message: "Restarted destination" });
+      } catch (error) {
+        console.error("Error restarting destination:", error);
+        if (error.message.includes("not found")) {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(400).json({ error: "Failed to restart destination" });
         }
       }
     })

@@ -4,6 +4,7 @@ import EventEmitter from "node:events";
 import { spawn, ChildProcess } from "node:child_process";
 import { FfmpegProcess } from "../models/ffmpegRunner.ts";
 import { getStreamInstanceInternalRtmpUrl } from "../utils/stream.ts";
+import { streamsRepository } from "../repository/index.ts";
 
 /**
  * This class is responsible for managing ffmpeg processes for each stream instance.
@@ -86,6 +87,70 @@ export class FfmpegRunnerService implements IService {
     const processes = this.activeStreams.get(streamId);
     if (!processes) return;
     await Promise.all(processes.map((process) => this.killFfmpegProcess(process)));
+  }
+
+  // A very hacky restart destination method....
+  public async restartDestination(streamId: string, destinationId: string): Promise<void> {
+    console.log("RestartDestination", streamId, destinationId);
+    const activeStream = this.activeStreams.get(streamId);
+    const streaminstance = await streamsRepository.findById(streamId);
+    if (!activeStream) {
+      if (streaminstance && streaminstance.state === "Live") {
+        // One more fail safe, in case ffmpeg crashes, activeStreams entry might be removed.
+        console.log("RestartDestination: Stream '", streamId, "' is not in activeStreams. Starting new process");
+        const dest = streaminstance.destinations.find((d) => d.id === destinationId);
+        if (dest) {
+          const process = await this.startFfmpegProcess(streaminstance, dest);
+          this.activeStreams.set(streamId, [process]);
+          return;
+        }
+      }
+
+      throw new Error(`RestardDestination Stream with id ${streamId} not found in activeStream`);
+    }
+
+    // How we find ffmpeg process for the destination, in this.activeStreams array
+    for (const item of activeStream) {
+      if (item.destination !== destinationId) {
+        continue;
+      }
+
+      await this.killFfmpegProcess(item);
+      break;
+    }
+
+    // Await 5 sec
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    if (!streaminstance) {
+      throw new Error(`RestartDestination Stream with id ${streamId} not found`);
+    }
+
+    if (streaminstance.state !== "Live") {
+      throw new Error(`RestartDestination Stream with id ${streamId} is not in live state`);
+    }
+
+    const destination = streaminstance.destinations.find((d) => d.id === destinationId);
+    if (!destination) {
+      throw new Error(`RestartDestination Stream with id ${streamId} not found`);
+    }
+
+    // Just in case, check again if destination process is running...
+    const activeStreamSafety = this.activeStreams.get(streamId);
+    if (activeStreamSafety) {
+      const activeProcess = activeStreamSafety.find((p) => p.destination === destinationId);
+      if (activeProcess) {
+        console.log(
+          "RestartDestination: Destionation '",
+          destinationId,
+          "' is already running after restart. No need to do anything",
+        );
+        return;
+      }
+    }
+
+    const process = await this.startFfmpegProcess(streaminstance, destination);
+    this.activeStreams.set(streamId, [process]);
   }
 
   private async startFfmpegProcess(stream: StreamInstance, destination: StreamDestination): Promise<FfmpegProcess> {

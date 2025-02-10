@@ -1,3 +1,10 @@
+TESTS:
+ - Milion konekta / diskonekta klienata
+  - Ima onaj bug sa 'destinaiton already active'
+  - Fix keyframes rate problem. Set keyframes to 4 sec
+ - Testiran ngingx proxy
+ - uptime monitors
+
 NOW:
 - DONE - Rewrite FfmpegRunnerSErvice, not to be AI fuckedup, and to properly handle and report states
   - DONE -  Maybe create some ffmpegInstanceState and update it based on FFmpeg logs

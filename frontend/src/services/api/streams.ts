@@ -49,6 +49,11 @@ export const streamsApi = {
     return response.data;
   },
 
+  restartDestination: async (streamId: string, destinationId: string): Promise<StreamInstance> => {
+    const response = await apiClient.post(`/streams/${streamId}/destinations/${destinationId}/restart`);
+    return response.data;
+  },
+
   removeDestination: async (streamId: string, destinationId: string): Promise<StreamInstance> => {
     console.log("Removing destination " + destinationId + " from stream " + streamId);
     const response = await apiClient.delete<StreamInstance>(`/streams/${streamId}/destinations/${destinationId}`);
