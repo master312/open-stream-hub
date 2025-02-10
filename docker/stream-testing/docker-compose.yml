@@ -1,0 +1,70 @@
+version: '3'
+
+services:
+  wireguard:
+    image: lscr.io/linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      # Disable IPv6
+      - ALLOWEDIPS=0.0.0.0/0
+      - SERVERURL=auto
+      - SERVERPORT=51820
+      - PEERS=1
+      - PEERDNS=auto
+      - INTERNAL_SUBNET=10.8.0.0
+    volumes:
+      - ./wireguard-config:/config
+      - /lib/modules:/lib/modules
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=1
+    restart: unless-stopped
+    networks:
+      - stream_network
+
+  video1_stream:
+    image: linuxserver/ffmpeg
+    container_name: video1_stream
+    network_mode: service:wireguard
+    volumes:
+      - ./videos:/videos
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    command:
+      -stream_loop -1 -re -i /videos/video1.mp4
+      -c copy
+      -f flv rtmp://10.8.0.1:1935/live/df2fef929c72a571677413d0d961da0ceb2a21a0c7951450fd11771885a90c46
+    restart: unless-stopped
+    depends_on:
+      - wireguard
+
+  video2_stream:
+    image: linuxserver/ffmpeg
+    container_name: video2_stream
+    network_mode: service:wireguard
+    volumes:
+      - ./videos:/videos
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    command:
+      -stream_loop -1 -re -i /videos/video2.mp4
+      -c copy
+      -f flv rtmp://10.8.0.1:1935/live/7d9d89cd878e23ed04e161d2f876e699c9234b5136562231e67125af5395da0d
+    restart: unless-stopped
+    depends_on:
+      - wireguard
+
+networks:
+  stream_network:
+    driver: bridge
+

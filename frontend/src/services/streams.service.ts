@@ -15,6 +15,7 @@ class StreamsService {
   private loading = new BehaviorSubject<boolean>(false);
   private error = new BehaviorSubject<Error | null>(null);
   private publicInjestUrl: string = "";
+  private publicInjestSecret: string = "";
 
   constructor() {
     this.fetchPublicInjestUrl();
@@ -39,6 +40,10 @@ class StreamsService {
 
   getFullPublicInjestUrl() {
     return this.publicInjestUrl;
+  }
+
+  getPublicInjectSecret() {
+    return this.publicInjestSecret;
   }
 
   isLoading() {
@@ -269,8 +274,10 @@ class StreamsService {
   private async fetchPublicInjestUrl() {
     if (this.publicInjestUrl && this.publicInjestUrl !== "") return;
     try {
-      const url = await streamsApi.getPublicIngestUrl();
+      const { url, secret } = await streamsApi.getPublicIngestUrl();
       this.publicInjestUrl = url;
+      this.publicInjestSecret = secret;
+      console.log("Retrieved injest URL and Secret", url, secret);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch public url");
       this.error.next(error);

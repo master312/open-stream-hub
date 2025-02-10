@@ -31,6 +31,7 @@ export class RtmpInjestService implements IService {
     this.nms.on("prePublish", this.nmsOnPrePublish.bind(this));
     this.nms.on("postPublish", this.nmsOnPostPublish.bind(this));
     this.nms.on("donePublish", this.nmsOnDonePublish.bind(this));
+    this.nms.on("prePlay", this.nmsOnPrePlay.bind(this));
 
     await this.nms.run();
   }
@@ -110,6 +111,45 @@ export class RtmpInjestService implements IService {
 
     this.streamIdSessionIdMap.delete(id);
     this.eventEmitter.emit("injest:stopped", stream.id);
+  }
+
+  private async nmsOnPrePlay(id: string, streamPath: string, params: any): Promise<void> {
+    const session = this.nms.getSession(id);
+    const fromUrl = session.connectCmdObj.tcUrl;
+    if (fromUrl.startsWith("rtmp://localhost") || fromUrl.startsWith("rtmp://127.0.0.1")) {
+      // We skip secret checking for localhost clients
+      console.log("Skipping validation for localhost client.");
+      return;
+    }
+
+    if (!config.rtmpPlaySecret || config.rtmpPlaySecret === "") {
+      console.log("RTMP Play secret is not set. Skipping validation.");
+      return;
+    }
+
+    const streamKey = this.extractStreamKey(streamPath);
+    if (!streamKey || !params) {
+      session.reject();
+      return;
+    }
+
+    const secret = params.secret;
+    if (!secret || config.rtmpPlaySecret !== secret) {
+      console.log("Invalid secret. ", fromUrl, " ", secret);
+      session.reject();
+      return;
+    }
+
+    const stream = await streamsRepository.findByApiKey(streamKey);
+    if (!stream) {
+      session.reject();
+      return;
+    }
+
+    if (stream.state !== "Live") {
+      session.reject();
+      return;
+    }
   }
 
   // Extracts the stream key from the stream path

@@ -17,6 +17,7 @@ export const config = {
   mongodbUrl: Deno.env.get("MONGODB_URI"),
   mongoDbName: Deno.env.get("MONGODB_DB_NAME"),
   realtimeThumbnailDisabled: Deno.env.get("REALTIME_THUMBNAIL_DISABLED") === "true",
+  rtmpPlaySecret: Deno.env.get("RTMP_PLAY_SECRET"),
   injestRtmpServer: {
     ...nodeMediaServerCfg,
     publicUrl: (Deno.env.get("RTMP_INJECT_PUBLIC_URL") + ":" + nodeMediaServerCfg.rtmp.port).replace(/(?<!:)\/\//g, ""),

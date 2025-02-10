@@ -10,6 +10,7 @@ export function createStreamRoutes(router: Router) {
       try {
         res.json({
           url: config.injestRtmpServer.publicUrl + "/" + config.injestRtmpServer.linkRoot,
+          secret: config.rtmpPlaySecret,
         });
       } catch (error) {
         console.error("Error fetching public ingest url:", error);

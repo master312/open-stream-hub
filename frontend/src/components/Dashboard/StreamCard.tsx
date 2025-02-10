@@ -95,20 +95,24 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
         <h3 className="font-medium text-lg text-content-primary truncate">{stream.name}</h3>
 
         <div className="space-y-2">
-          <div className="flex items-center text-sm text-content-secondary group cursor-pointer" onClick={copyRtmpEndpoint}>
-            <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+          <div className="flex items-start text-sm text-content-secondary group cursor-pointer" onClick={copyRtmpEndpoint}>
+            <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-1" />
             <textarea
               readOnly
-              value={streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey}
-              className="resize-none bg-transparent border-none outline-none text-content-secondary w-full cursor-pointer"
+              value={
+                streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey + "?secret=" + streamsService.getPublicInjectSecret()
+              }
+              className="resize-none bg-transparent border-none outline-none text-content-secondary w-full cursor-pointer overflow-wrap-anywhere"
               onClick={(e) => e.stopPropagation()}
               rows={2}
-              style={{ overflow: "hidden" }}
+              style={{
+                overflowWrap: "break-word",
+                wordBreak: "break-all",
+              }}
             />
-            <ClipboardDocumentIcon className="w-4 h-4 ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100" />
+            <ClipboardDocumentIcon className="w-4 h-4 ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100 mt-1" />
             {copied && <span className="ml-2 text-xs text-green-500">Copied!</span>}
           </div>
-
           <div className="flex items-center text-sm text-content-secondary">
             <ArrowPathIcon className="w-4 h-4 mr-2 flex-shrink-0" />
             <span>{"TODO QUALITY HERE"}</span>
