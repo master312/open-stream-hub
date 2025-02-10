@@ -124,6 +124,7 @@ export class FfmpegRunnerService implements IService {
     if (ffmpegProcess.status !== "Stopping" && ffmpegProcess.status !== "Stopped") return;
 
     ffmpegProcess.error = error;
+    console.error("FFMPEG-ERROR, Destination:", ffmpegProcess.destination, error);
   }
 
   private onProcessUpdate(ffmpegProcess: FfmpegProcess, message: string): void {
