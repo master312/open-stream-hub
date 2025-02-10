@@ -3,6 +3,7 @@ version: "3.8"
 services:
   frontend:
     image: open-stream-hub-frontend:latest
+    restart: always
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
@@ -14,6 +15,7 @@ services:
 
   backend:
     image: open-stream-hub-backend:latest
+    restart: always
     ports:
       - "${REST_API_PORT}:${REST_API_PORT}"
       - "${RTMP_INJECT_PORT}:${RTMP_INJECT_PORT}"
@@ -30,6 +32,7 @@ services:
 
   mongodb:
     image: mongo:latest
+    restart: always
     # ports:
     #   - "27017:27017"
     volumes:
