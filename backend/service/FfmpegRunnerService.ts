@@ -60,8 +60,9 @@ export class FfmpegRunnerService implements IService {
 
   // Will start stream for all destinations
   async startStream(stream: StreamInstance): Promise<void> {
-    if (this.activeStreams.has(stream.id)) {
-      throw new Error("Destination already active");
+    var existingStreams = this.activeStreams.get(stream.id);
+    if (existingStreams && existingStreams.length > 0) {
+      throw new Error("Destination already active. StreamID:" + stream.id + " ActiveStreams:" + existingStreams.length);
     }
 
     const processes: FfmpegProcess[] = [];
@@ -72,10 +73,7 @@ export class FfmpegRunnerService implements IService {
       processes.push(process);
     }
 
-    console.log(
-      `Started '${processes.length}' ffmpeg processes for stream`,
-      stream.id,
-    );
+    console.log(`Started '${processes.length}' ffmpeg processes for stream`, stream.id);
 
     this.activeStreams.set(stream.id, processes);
   }
@@ -87,15 +85,10 @@ export class FfmpegRunnerService implements IService {
 
     const processes = this.activeStreams.get(streamId);
     if (!processes) return;
-    await Promise.all(
-      processes.map((process) => this.killFfmpegProcess(process)),
-    );
+    await Promise.all(processes.map((process) => this.killFfmpegProcess(process)));
   }
 
-  private async startFfmpegProcess(
-    stream: StreamInstance,
-    destination: StreamDestination,
-  ): Promise<FfmpegProcess> {
+  private async startFfmpegProcess(stream: StreamInstance, destination: StreamDestination): Promise<FfmpegProcess> {
     const ffmpegProcess: FfmpegProcess = {
       process: null,
       stream: stream.id,
@@ -106,9 +99,7 @@ export class FfmpegRunnerService implements IService {
 
     const args = FfmpegRunnerService.BuildFfmpegArgs(stream, destination);
     if (!args || args.length === 0) {
-      throw new Error(
-        `Error building ffmpeg args for ${stream.id} ${destination.id}`,
-      );
+      throw new Error(`Error building ffmpeg args for ${stream.id} ${destination.id}`);
     }
 
     console.log(`Starting ffmpeg process wit args ${args.join(" ")}`);
@@ -120,18 +111,17 @@ export class FfmpegRunnerService implements IService {
 
   private async killFfmpegProcess(ffmpegProcess: FfmpegProcess): Promise<void> {
     const status = ffmpegProcess.status;
-    if (status !== "Running" && status !== "Starting") return;
+    if (status !== "Running" && status !== "Starting") {
+      console.log("Debug: KillFFmpegProcess: process status: " + status + " Destination: " + ffmpegProcess.destination);
+      return;
+    }
     ffmpegProcess.status = "Stopping";
     ffmpegProcess.process.kill("SIGTERM");
     await this.eventEmitter.emit("process:status", ffmpegProcess);
   }
 
   private onProcessError(ffmpegProcess: FfmpegProcess, error: Error): void {
-    if (
-      ffmpegProcess.status !== "Stopping" &&
-      ffmpegProcess.status !== "Stopped"
-    )
-      return;
+    if (ffmpegProcess.status !== "Stopping" && ffmpegProcess.status !== "Stopped") return;
 
     ffmpegProcess.error = error;
   }
@@ -156,15 +146,11 @@ export class FfmpegRunnerService implements IService {
     // Execute after 1ms delay, just to be safe
     setTimeout(() => {
       if (ffmpegProcess.status !== "Stopping") {
-        console.log(
-          `FFmpeg process exit with code ${code} with status ${ffmpegProcess.status}`,
-        );
+        console.log(`FFmpeg process exit with code ${code} with status ${ffmpegProcess.status}`);
       }
 
       if (code !== 0) {
-        ffmpegProcess.error = new Error(
-          `FFmpeg process exited with code ${code}`,
-        );
+        ffmpegProcess.error = new Error(`FFmpeg process exited with code ${code}`);
       }
 
       const processes = this.activeStreams.get(ffmpegProcess.stream);
@@ -172,8 +158,7 @@ export class FfmpegRunnerService implements IService {
         processes.splice(processes.indexOf(ffmpegProcess), 1);
       }
 
-      if (!processes || processes.length === 0)
-        this.activeStreams.delete(ffmpegProcess.stream);
+      if (!processes || processes.length === 0) this.activeStreams.delete(ffmpegProcess.stream);
 
       ffmpegProcess.status = "Stopped";
       this.eventEmitter.emit("process:status", ffmpegProcess);
@@ -184,9 +169,7 @@ export class FfmpegRunnerService implements IService {
     const process = ffmpegProcess.process;
     const streamId = ffmpegProcess.stream;
     process.stdout.on("data", (data) => {
-      console.log(
-        `[FFmpeg stdout data ${streamId}:${ffmpegProcess.destination}] ${data}`,
-      );
+      console.log(`[FFmpeg stdout data ${streamId}:${ffmpegProcess.destination}] ${data}`);
     });
 
     // NOTE: That FFmpeg writes its regular progress updates, statistics, and informational messages to stderr rather than stdout.
@@ -211,10 +194,7 @@ export class FfmpegRunnerService implements IService {
     });
   }
 
-  private static BuildFfmpegArgs(
-    stream: StreamInstance,
-    destination: StreamDestination,
-  ): string[] {
+  private static BuildFfmpegArgs(stream: StreamInstance, destination: StreamDestination): string[] {
     const args: string[] = [
       "-i",
       getStreamInstanceInternalRtmpUrl(stream.apiKey),
