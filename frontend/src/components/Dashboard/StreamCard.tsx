@@ -97,7 +97,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
         <div className="space-y-2">
           <div className="flex items-center text-sm text-content-secondary group cursor-pointer" onClick={copyRtmpEndpoint}>
             <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-            <span className="truncate">{streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey}</span>
+            <textarea
+              readOnly
+              value={streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey}
+              className="resize-none bg-transparent border-none outline-none text-content-secondary w-full cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+              rows={2}
+              style={{ overflow: "hidden" }}
+            />
             <ClipboardDocumentIcon className="w-4 h-4 ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100" />
             {copied && <span className="ml-2 text-xs text-green-500">Copied!</span>}
           </div>
