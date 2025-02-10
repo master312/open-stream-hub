@@ -103,14 +103,14 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({ stream }
                 <InformationCircleIcon className="w-5 h-5" />
               </button>
               <button
-                onClick={() => handleRestartDestination(dest.id)}
+                onClick={() => handleRestartDestination(dest._id)}
                 className="text-content-secondary hover:text-content-primary transition-colors p-1"
                 title="Restart destination"
               >
                 <ArrowPathIcon className="w-5 h-5" />
               </button>
               <button
-                onClick={() => handleRemoveDestination(dest.id)}
+                onClick={() => handleRemoveDestination(dest._id)}
                 disabled={!isStreamModifiable}
                 className={`text-content-secondary transition-colors p-1 ${
                   isStreamModifiable ? "hover:text-status-error" : "opacity-50 cursor-not-allowed"

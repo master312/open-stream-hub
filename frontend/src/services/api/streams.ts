@@ -1,4 +1,4 @@
-import { StreamInstance, StreamDestination } from "../../types/stream.ts";
+import { StreamDestination, StreamInstance } from "../../types/stream.ts";
 import { CreateStreamRequest } from "../../types/dto.ts";
 import { apiClient } from "./client";
 
@@ -12,51 +12,53 @@ export const streamsApi = {
   },
 
   getStreams: async (): Promise<StreamInstance[]> => {
-    const response = await apiClient.get<StreamInstance[]>("/streams");
+    const response = await apiClient.get<StreamInstance[]>("/stream");
     return response.data;
   },
 
   getStream: async (id: string): Promise<StreamInstance> => {
-    const response = await apiClient.get<StreamInstance>(`/streams/${id}`);
+    const response = await apiClient.get<StreamInstance>(`/stream/${id}`);
     return response.data;
   },
 
   getStreamThumbnailUrl: (streamId: string): string => {
-    return `${apiClient.defaults.baseURL}/streams/${streamId}/thumbnail`;
+    return `${apiClient.defaults.baseURL}/stream/${streamId}/thumbnail`;
   },
 
   createStream: async (data: CreateStreamRequest): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>("/streams", data);
+    const response = await apiClient.post<StreamInstance>("/stream", data);
     return response.data;
   },
 
   startStream: async (id: string): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>(`/streams/${id}/start`);
+    const response = await apiClient.post<StreamInstance>(`/stream/start/${id}`);
     return response.data;
   },
 
   stopStream: async (id: string): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>(`/streams/${id}/stop`);
+    const response = await apiClient.post<StreamInstance>(`/stream/stop/${id}`);
     return response.data;
   },
 
   deleteStream: async (id: string): Promise<void> => {
-    await apiClient.delete(`/streams/${id}`);
+    await apiClient.delete(`/stream/${id}`);
   },
 
   addDestination: async (streamId: string, destination: Omit<StreamDestination, "id">): Promise<StreamInstance> => {
-    const response = await apiClient.post<StreamInstance>(`/streams/${streamId}/destinations`, destination);
+    const response = await apiClient.post<StreamInstance>(`/stream/relay/new/${streamId}`, {
+      "relay": destination
+    });
     return response.data;
   },
 
   restartDestination: async (streamId: string, destinationId: string): Promise<StreamInstance> => {
-    const response = await apiClient.post(`/streams/${streamId}/destinations/${destinationId}/restart`);
+    const response = await apiClient.post(`/stream/${streamId}/destinations/${destinationId}/restart`);
     return response.data;
   },
 
   removeDestination: async (streamId: string, destinationId: string): Promise<StreamInstance> => {
     console.log("Removing destination " + destinationId + " from stream " + streamId);
-    const response = await apiClient.delete<StreamInstance>(`/streams/${streamId}/destinations/${destinationId}`);
+    const response = await apiClient.delete<StreamInstance>(`/stream/relay/${streamId}/${destinationId}`);
     return response.data;
   },
 };

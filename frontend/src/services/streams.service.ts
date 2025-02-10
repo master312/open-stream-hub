@@ -135,6 +135,11 @@ class StreamsService {
 
       console.log("Starting stream");
       const stream = await streamsApi.startStream(id);
+      if (!stream) {
+        alert("There was probably some error. Stream not retrieved. Try refreshing page")
+        return;
+      }
+
       this.updateStreamInList(stream);
 
       if (this.currentStream.value?.id === id) {
@@ -158,8 +163,12 @@ class StreamsService {
       this.error.next(null);
 
       const stream = await streamsApi.stopStream(id);
-      this.updateStreamInList(stream);
+      if (!stream) {
+        alert("There was probably some error. Stream not retrieved. Try refreshing page")
+        return;
+      }
 
+      this.updateStreamInList(stream);
       if (this.currentStream.value?.id === id) {
         this.currentStream.next(stream);
       }
@@ -203,7 +212,8 @@ class StreamsService {
       this.loading.next(true);
       this.error.next(null);
 
-      const stream = await streamsApi.addDestination(streamId, destination);
+      await streamsApi.addDestination(streamId, destination);
+      const stream = await streamsApi.getStream(streamId);
       this.updateStreamInList(stream);
 
       if (this.currentStream.value?.id === streamId) {
@@ -226,7 +236,9 @@ class StreamsService {
       this.loading.next(true);
       this.error.next(null);
 
-      const stream = await streamsApi.removeDestination(streamId, destinationId);
+      await streamsApi.removeDestination(streamId, destinationId);
+
+      const stream = await streamsApi.getStream(streamId)
       this.updateStreamInList(stream);
 
       if (this.currentStream.value?.id === streamId) {
