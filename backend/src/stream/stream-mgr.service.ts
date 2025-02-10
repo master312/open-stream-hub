@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { StreamInstance, StreamStatus } from "../models/stream-instance.model";
+import { StreamInstance } from "../models/stream-instance.model";
 import { Model } from "mongoose";
 import { StreamCrudService } from "./stream-crud.service";
-import { Logger } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class StreamMgrService {
@@ -11,12 +11,14 @@ export class StreamMgrService {
     @InjectModel(StreamInstance.name)
     private streamModel: Model<StreamInstance>,
     private readonly crudService: StreamCrudService,
-  ) {}
+    private eventEmitter: EventEmitter2,
+  ) {
+  }
 
   async startStream(id: string) {
     const stream = await this.crudService.getStream(id);
     if (!stream) {
-      Logger.log("Stream not found for start. Id: " + id);
+      Logger.log(`Stream not found for start. Id:  ${id}`, "StreamManager");
       return;
     }
 
@@ -36,17 +38,18 @@ export class StreamMgrService {
 
     // Update stream state to "Waiting"
     await this.streamModel.updateOne(
-      { _id: stream._id },
-      { $set: { state: "Waiting" } },
+      {_id: stream._id},
+      {$set: {state: "Waiting"}},
     );
 
-    Logger.log(`Started stream ${id}`);
+    this.eventEmitter.emit('stream.start', id);
+    Logger.log(`Started stream ${id}`, "StreamManager");
   }
 
   async stopStream(id: string) {
     const stream = await this.crudService.getStream(id);
     if (!stream) {
-      Logger.log("Stream not found for stop. Id: " + id);
+      Logger.log(`Stream not found for stop. Id: ${id}`, "StreamManager");
       return;
     }
 
@@ -57,11 +60,11 @@ export class StreamMgrService {
 
     // Update stream state to "Stopped"
     await this.streamModel.updateOne(
-      { _id: stream._id },
-      { $set: { state: "Stopped" } },
+      {_id: stream._id},
+      {$set: {state: "Stopped"}},
     );
 
-    Logger.log(`Stopped stream ${id}`);
-    // TODO: Emit signal to kill all ffmpeg stuff related to this stream
+    this.eventEmitter.emit('stream.stop', id);
+    Logger.log(`Stopped stream ${id}`, "StreamManager");
   }
 }

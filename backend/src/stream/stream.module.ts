@@ -8,6 +8,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { StreamInstance, StreamInstanceSchema, } from "src/models/stream-instance.model";
 import { StreamRelayController } from "./stream-relay.controller";
 import { StreamRelayDestination, StreamRelayDestinationSchema } from "../models/stream-relay-destination.model";
+import { StreamRelayRunnerService } from "./stream-relay-runner.service";
 
 @Global()
 @Module({
@@ -22,7 +23,7 @@ import { StreamRelayDestination, StreamRelayDestinationSchema } from "../models/
     StreamMgrController,
     StreamRelayController,
   ],
-  providers: [StreamCrudService, StreamMgrService, StreamRelayService],
+  providers: [StreamCrudService, StreamMgrService, StreamRelayService, StreamRelayRunnerService],
   exports: [],
 })
 export class StreamModule {}

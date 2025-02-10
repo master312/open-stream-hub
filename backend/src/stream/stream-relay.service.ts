@@ -3,7 +3,7 @@ import { StreamRelayDestination } from "../models/stream-relay-destination.model
 import { StreamCrudService } from "./stream-crud.service";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { validate, validateOrReject } from "class-validator";
+import { OnEvent } from "@nestjs/event-emitter";
 
 @Injectable()
 export class StreamRelayService {
@@ -48,7 +48,7 @@ export class StreamRelayService {
     }
 
     const destination = stream.destinations.find(
-      value => value._id == relayId,
+      (value) => value._id == relayId,
     );
     if (!destination) {
       return;
@@ -61,7 +61,7 @@ export class StreamRelayService {
     }
 
     stream.destinations = stream.destinations.filter(
-      value => value._id != relayId,
+      (value) => value._id != relayId,
     );
     await this.crudService.updateStream(stream);
   }

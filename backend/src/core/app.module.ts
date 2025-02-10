@@ -4,9 +4,10 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { StreamModule } from "../stream/stream.module";
 import { RtmpServerService } from "./rtmp-server.service";
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
-  imports: [DatabaseModule, StreamModule],
+  imports: [EventEmitterModule.forRoot(), DatabaseModule, StreamModule],
   controllers: [AppController],
   providers: [AppService, RtmpServerService],
 })
