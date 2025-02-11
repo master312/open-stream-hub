@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { StreamInstance } from "src/models/stream-instance.model";
 import { Model } from "mongoose";
@@ -8,7 +8,20 @@ export class StreamCrudService {
   constructor(
     @InjectModel(StreamInstance.name)
     private streamModel: Model<StreamInstance>,
-  ) {}
+  ) {
+  }
+
+  async onModuleInit() {
+    // Reset all 'live' streams to 'waiting'
+    const result = await this.streamModel.updateMany(
+      {state: 'Live'},
+      {$set: {state: 'Waiting'}}
+    );
+
+    if (result.modifiedCount > 0) {
+      Logger.log(`Reset ${result.modifiedCount} streams from 'Live' to 'Waiting' state`, "StreamCrudService");
+    }
+  }
 
   async createStream(name: string): Promise<StreamInstance> {
     const apiKey = await this.generateUniqueApiKey();
@@ -32,7 +45,7 @@ export class StreamCrudService {
   }
 
   async getByApiKey(apiKey: string): Promise<StreamInstance | null> {
-    return await this.streamModel.findOne({ apiKey: apiKey }).exec();
+    return await this.streamModel.findOne({apiKey: apiKey}).exec();
   }
 
   async getStreams(): Promise<StreamInstance[]> {
@@ -41,9 +54,9 @@ export class StreamCrudService {
 
   async updateStream(stream: StreamInstance): Promise<void> {
     await this.streamModel.updateOne(
-      { _id: stream._id },
-      { $set: stream },
-      { upsert: false },
+      {_id: stream._id},
+      {$set: stream},
+      {upsert: false},
     );
   }
 
@@ -57,7 +70,7 @@ export class StreamCrudService {
         .join("");
 
       // Check if the API key already exists in the database
-      if (!(await this.streamModel.findOne({ apiKey: apiKey }).exec())) {
+      if (!(await this.streamModel.findOne({apiKey: apiKey}).exec())) {
         return apiKey;
       }
     }
