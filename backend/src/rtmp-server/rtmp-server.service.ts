@@ -143,8 +143,12 @@ export class RtmpServerService {
       return;
     }
 
-    if (!RtmpServerService.ValidateWatchUrlAndApp(session)) {
-      Logger.error(`Tried to watch form forbidden URL ${session.connectCmdObj.tcUrl}`, "RtmpServer");
+    // On localhost, we ignore all link checks
+    const rawUrl = session.connectCmdObj.tcUrl.toString();
+    const isLocal: boolean = rawUrl.startsWith("rtmp://127.0.0.1") || rawUrl.startsWith("rtmp://localhost");
+
+    if (!isLocal && !RtmpServerService.ValidateWatchUrlAndApp(session)) {
+      Logger.error(`Tried to watch form forbidden URL ${rawUrl}`, "RtmpServer");
       await session.reject();
       return;
     }
