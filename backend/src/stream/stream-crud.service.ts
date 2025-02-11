@@ -31,6 +31,10 @@ export class StreamCrudService {
     return await this.streamModel.findById(id).exec();
   }
 
+  async getByApiKey(apiKey: string): Promise<StreamInstance | null> {
+    return await this.streamModel.findOne({ apiKey: apiKey }).exec();
+  }
+
   async getStreams(): Promise<StreamInstance[]> {
     return await this.streamModel.find().exec();
   }

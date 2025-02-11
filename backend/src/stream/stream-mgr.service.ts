@@ -3,7 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { StreamInstance } from "../models/stream-instance.model";
 import { Model } from "mongoose";
 import { StreamCrudService } from "./stream-crud.service";
-import { EventEmitter2 } from "@nestjs/event-emitter";
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
 
 @Injectable()
 export class StreamMgrService {
@@ -58,6 +58,11 @@ export class StreamMgrService {
       return;
     }
 
+    if (stream.state === "Live") {
+      // TODO: Force disconnect all RTMP source streams
+      return;
+    }
+
     // Update stream state to "Stopped"
     await this.streamModel.updateOne(
       {_id: stream._id},
@@ -66,5 +71,29 @@ export class StreamMgrService {
 
     this.eventEmitter.emit('stream.stop', id);
     Logger.log(`Stopped stream ${id}`, "StreamManager");
+  }
+
+  @OnEvent("stream.live.start")
+  async onStreamBecomeLive(streamId: string) {
+    let stream = await this.crudService.getStream(streamId);
+    if (!stream) {
+      // TODO: In case of this, force kill stream and all destinations
+      throw new Error("onStreamBecomeLive but did not found stream in DB! This should never, ever happen");
+    }
+
+    stream.state = "Live";
+    await this.crudService.updateStream(stream);
+  }
+
+  @OnEvent("stream.live.end")
+  async onLiveStreamEnded(streamId: string) {
+    let stream = await this.crudService.getStream(streamId);
+    if (!stream) {
+      Logger.debug(`Stream not found stream in DB on onLiveStreamEnded`, "StreamManager");
+      return;
+    }
+
+    stream.state = "Waiting";
+    await this.crudService.updateStream(stream);
   }
 }

@@ -3,12 +3,10 @@ import { StreamCrudController } from "./stream-crud.controller";
 import { StreamCrudService } from "./stream-crud.service";
 import { StreamMgrController } from "./stream-mgr.controller";
 import { StreamMgrService } from "./stream-mgr.service";
-import { StreamRelayService } from "./stream-relay.service";
 import { MongooseModule } from "@nestjs/mongoose";
 import { StreamInstance, StreamInstanceSchema, } from "src/models/stream-instance.model";
-import { StreamRelayController } from "./stream-relay.controller";
+import { StreamRelayController } from "../relay/stream-relay.controller";
 import { StreamRelayDestination, StreamRelayDestinationSchema } from "../models/stream-relay-destination.model";
-import { StreamRelayRunnerService } from "./stream-relay-runner.service";
 
 @Global()
 @Module({
@@ -23,7 +21,7 @@ import { StreamRelayRunnerService } from "./stream-relay-runner.service";
     StreamMgrController,
     StreamRelayController,
   ],
-  providers: [StreamCrudService, StreamMgrService, StreamRelayService, StreamRelayRunnerService],
-  exports: [],
+  providers: [StreamCrudService, StreamMgrService],
+  exports: [StreamCrudService],
 })
 export class StreamModule {}

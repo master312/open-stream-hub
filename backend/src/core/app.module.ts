@@ -3,12 +3,18 @@ import { DatabaseModule } from "./mongodb.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { StreamModule } from "../stream/stream.module";
-import { RtmpServerService } from "./rtmp-server.service";
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { RtmpServerModule } from "../rtmp-server/rtmp-server.module";
+import { RelayModule } from "../relay/relay.module";
 
 @Module({
-  imports: [EventEmitterModule.forRoot(), DatabaseModule, StreamModule],
+  imports: [
+    EventEmitterModule.forRoot(),
+    DatabaseModule,
+    RtmpServerModule,
+    RelayModule,
+    StreamModule],
   controllers: [AppController],
-  providers: [AppService, RtmpServerService],
+  providers: [AppService],
 })
 export class AppModule {}
