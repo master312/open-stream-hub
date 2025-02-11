@@ -1,10 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { StreamRelayDestination } from "../models/stream-relay-destination.model";
-import { FfmpegCommand } from 'fluent-ffmpeg';
+import * as Ffmpeg from 'fluent-ffmpeg';
 import { RelayStatusEvent } from "./relay-status.event";
 import { RelayInstanceRunInfo } from "./relay-run-instance-info.type";
-
+import { TheConfig } from "../../config";
 
 /**
  * This service basically only manages running of ffmpeg instances that serve as stream relays,
@@ -36,8 +36,8 @@ export class StreamRelayRunnerService {
 
   public startRelay(streamId: string, destination: StreamRelayDestination): boolean {
     const destId = (destination._id as any).toString();
-    const command = new FfmpegCommand(`rtmp://localhost/${streamId}`)
-      .inputOptions(['-i'])
+    const command = Ffmpeg()
+      .input(`rtmp://localhost:${TheConfig.nodeMediaServer.rtmp.port}${TheConfig.nodeMediaServer.watchRoot}/${streamId}`)
       .outputOptions([
         '-c:v copy', // Copy video codec
         '-c:a aac',  // Transcode audio to AAC
@@ -74,7 +74,7 @@ export class StreamRelayRunnerService {
   public stopRelay(streamId: string, destinationId: string) {
     const activeDestinations = this.activeStreams.get(streamId);
     if (!activeDestinations) {
-      Logger.warn(`Tried to stop relay, but no active destinations found for stream ${streamId}`, "RelayRunner");
+      // Logger.warn(`Tried to stop relay, but no active destinations found for stream ${streamId}`, "RelayRunner");
       return;
     }
 
@@ -89,25 +89,22 @@ export class StreamRelayRunnerService {
     }
 
     instanceRunInfo.isExiting = true;
+    this.eventEmitter.emit("stream.relay.runner.stop", new RelayStatusEvent(streamId, destinationId));
+    activeDestinations.delete(destinationId);
     instanceRunInfo.runner.kill("SIGKILL");
   }
 
-  private onFfmpegStart(runner: FfmpegCommand, streamId: string, destinationId: string) {
+  private onFfmpegStart(runner: Ffmpeg.FfmpegCommand, streamId: string, destinationId: string) {
     Logger.log(`Ffmpeg relay started. StreamID: ${streamId}, RelayID: ${destinationId}`, "RelayRunner");
     this.eventEmitter.emit("stream.relay.runner.start", new RelayStatusEvent(streamId, destinationId));
   }
 
-  private onFfmpegStop(runner: FfmpegCommand, streamId: string, destinationId: string) {
+  private onFfmpegStop(runner: Ffmpeg.FfmpegCommand, streamId: string, destinationId: string) {
     Logger.log(`Ffmpeg relay stopped. StreamID: ${streamId}, RelayID: ${destinationId}`, "RelayRunner");
-    const activeDestinations = this.activeStreams.get(streamId);
-    if (activeDestinations) {
-      activeDestinations.delete(destinationId);
-    }
-
-    this.eventEmitter.emit("stream.relay.runner.stop", new RelayStatusEvent(streamId, destinationId));
+    this.stopRelay(streamId, destinationId);
   }
 
-  private onFfmpegError(runner: FfmpegCommand, error: Error, streamId: string, destinationId: string) {
+  private onFfmpegError(runner: Ffmpeg.FfmpegCommand, error: Error, streamId: string, destinationId: string) {
     Logger.error(`Ffmpeg relay error. StreamID: ${streamId}, RelayID: ${destinationId}`, "RelayRunner");
     Logger.error(error, "RelayRunner");
     this.eventEmitter.emit("stream.relay.runner.error", new RelayStatusEvent(streamId, destinationId));

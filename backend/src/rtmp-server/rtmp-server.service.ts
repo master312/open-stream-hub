@@ -104,7 +104,7 @@ export class RtmpServerService {
     const streamId = (stream._id as any).toString();
     this.activeSessions.set(streamId, id);
     this.activeKeyMap.set(streamId, info.apiKey);
-    this.eventEmitter.emit("stream.live.start", streamId);
+    this.eventEmitter.emit("rtmp.inject.start", streamId);
   }
 
   /**
@@ -127,7 +127,7 @@ export class RtmpServerService {
 
     const streamId = (stream._id as any).toString();
     this.activeSessions.delete(streamId);
-    this.eventEmitter.emit("stream.live.end", (stream._id as any).toString());
+    this.eventEmitter.emit("rtmp.inject.stop", (stream._id as any).toString());
     Logger.log(`Stream done publish: ${streamId}`, "RtmpServer");
   }
 

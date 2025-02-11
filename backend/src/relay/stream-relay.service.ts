@@ -116,10 +116,21 @@ export class StreamRelayService {
     Logger.log(`Started ${startedCount}/${destinations.length} relays for stream: ${streamId}`, "RelayService");
   }
 
-  @OnEvent("stream.live.end")
+  @OnEvent("stream.live.stop")
   async stopAllRelay(streamId: string) {
-    // TODO: Implement.....
     Logger.log(`Stopping all relays for stream: ${streamId}`, "RelayService");
+    const stream = await this.crudService.getStream(streamId);
+    if (!stream) {
+      return;
+    }
+
+    for (const item of stream.destinations) {
+      if (!item.enabled || !item._id || item.state == "Disconnected") {
+        continue;
+      }
+
+      this.relayRunnerService.stopRelay(streamId, (item._id as any).toString());
+    }
   }
 
   @OnEvent("stream.relay.runner.start")

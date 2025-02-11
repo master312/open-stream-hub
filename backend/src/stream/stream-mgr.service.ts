@@ -73,7 +73,7 @@ export class StreamMgrService {
     Logger.log(`Stopped stream ${id}`, "StreamManager");
   }
 
-  @OnEvent("stream.live.start")
+  @OnEvent("rtmp.inject.start")
   async onStreamBecomeLive(streamId: string) {
     let stream = await this.crudService.getStream(streamId);
     if (!stream) {
@@ -83,9 +83,10 @@ export class StreamMgrService {
 
     stream.state = "Live";
     await this.crudService.updateStream(stream);
+    this.eventEmitter.emit("stream.live.start", streamId);
   }
 
-  @OnEvent("stream.live.end")
+  @OnEvent("rtmp.inject.stop")
   async onLiveStreamEnded(streamId: string) {
     let stream = await this.crudService.getStream(streamId);
     if (!stream) {
@@ -95,5 +96,6 @@ export class StreamMgrService {
 
     stream.state = "Waiting";
     await this.crudService.updateStream(stream);
+    this.eventEmitter.emit("stream.live.stop", streamId);
   }
 }
