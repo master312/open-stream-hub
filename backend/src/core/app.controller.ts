@@ -15,7 +15,8 @@ export class AppController {
   @Get("/pub_injest_url")
   getPublicInjecstUrl() {
     return {
-      "url": TheConfig.nodeMediaServer.injectHost + ":" + TheConfig.nodeMediaServer.rtmp.port + "/" + TheConfig.nodeMediaServer.injectRoot
+      "injectUrl": TheConfig.nodeMediaServer.injectHost + ":" + TheConfig.nodeMediaServer.rtmp.port + TheConfig.nodeMediaServer.injectRoot,
+      "watchUrl": TheConfig.nodeMediaServer.injectHost + ":" + TheConfig.nodeMediaServer.rtmp.port + TheConfig.nodeMediaServer.watchRoot,
     }
   }
 }

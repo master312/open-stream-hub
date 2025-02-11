@@ -27,9 +27,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
     onClick(stream.id);
   };
 
-  const copyRtmpEndpoint = (e: React.MouseEvent) => {
+  const copyWatchUrl = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey);
+    navigator.clipboard.writeText(streamsService.getFullPublicWatchUrl() + "/" + stream.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -95,12 +95,12 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
         <h3 className="font-medium text-lg text-content-primary truncate">{stream.name}</h3>
 
         <div className="space-y-2">
-          <div className="flex items-start text-sm text-content-secondary group cursor-pointer" onClick={copyRtmpEndpoint}>
+          <div className="flex items-start text-sm text-content-secondary group cursor-pointer" onClick={copyWatchUrl}>
             <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-1" />
             <textarea
               readOnly
               value={
-                streamsService.getFullPublicInjestUrl() + "/" + stream.apiKey + "?secret=" + streamsService.getPublicInjectSecret()
+                streamsService.getFullPublicWatchUrl() + "/" + stream.id
               }
               className="resize-none bg-transparent border-none outline-none text-content-secondary w-full cursor-pointer overflow-wrap-anywhere"
               onClick={(e) => e.stopPropagation()}

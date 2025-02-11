@@ -1,3 +1,13 @@
+
+
+--- Improvements:
+ - Better link generation and config
+   * with settings for public and watch host URLs, etc....
+
+
+
+
+------------------- Old deprecated ----------------------
 TESTS:
  - Milion konekta / diskonekta klienata
   - Ima onaj bug sa 'destinaiton already active'

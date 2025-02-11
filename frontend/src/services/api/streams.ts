@@ -3,12 +3,9 @@ import { CreateStreamRequest } from "../../types/dto.ts";
 import { apiClient } from "./client";
 
 export const streamsApi = {
-  getPublicIngestUrl: async (): Promise<{ url: string; secret: string }> => {
-    const response = await apiClient.get<{ url: string; secret: string }>("/pub_injest_url");
-    return {
-      url: response.data.url,
-      secret: response.data.secret,
-    };
+  getPublicIngestUrl: async (): Promise<{ injectUrl: string; watchUrl: string }> => {
+    const response = await apiClient.get<{ injectUrl: string; watchUrl: string }>("/pub_injest_url");
+    return response.data;
   },
 
   getStreams: async (): Promise<StreamInstance[]> => {

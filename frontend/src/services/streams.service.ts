@@ -15,10 +15,10 @@ class StreamsService {
   private loading = new BehaviorSubject<boolean>(false);
   private error = new BehaviorSubject<Error | null>(null);
   private publicInjestUrl: string = "";
-  private publicInjestSecret: string = "";
+  private publicWatchUrl: string = "";
 
   constructor() {
-    this.fetchPublicInjestUrl();
+    this.fetchPublicUrls();
     interval(this.pollingInterval)
       .pipe(
         switchMap(async () => {
@@ -42,8 +42,8 @@ class StreamsService {
     return this.publicInjestUrl;
   }
 
-  getPublicInjectSecret() {
-    return this.publicInjestSecret;
+  getFullPublicWatchUrl() {
+    return this.publicWatchUrl;
   }
 
   isLoading() {
@@ -91,7 +91,7 @@ class StreamsService {
   }
 
   async fetchStreamById(id: string) {
-    await this.fetchPublicInjestUrl();
+    await this.fetchPublicUrls();
     try {
       this.loading.next(true);
       this.error.next(null);
@@ -297,13 +297,13 @@ class StreamsService {
     return statusPlaceholders[stream.state] || "/stream-status-invalid-state.png  ";
   }
 
-  private async fetchPublicInjestUrl() {
+  private async fetchPublicUrls() {
     if (this.publicInjestUrl && this.publicInjestUrl !== "") return;
     try {
-      const { url, secret } = await streamsApi.getPublicIngestUrl();
-      this.publicInjestUrl = url;
-      this.publicInjestSecret = secret;
-      console.log("Retrieved injest URL and Secret", url, secret);
+      const { injectUrl, watchUrl } = await streamsApi.getPublicIngestUrl();
+      this.publicInjestUrl = injectUrl;
+      this.publicWatchUrl = watchUrl;
+      console.log("Retrieved inject and watch URL", injectUrl, watchUrl);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch public url");
       this.error.next(error);
