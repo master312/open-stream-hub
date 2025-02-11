@@ -1,6 +1,7 @@
 export const TheConfig = {
   environment: process.env.NODE_ENV,
   port: process.env.REST_API_PORT,
+  hlsPreviewEnabled: process.env.HSL_PREVIEW_ENABLED === "true",
   database: {
     mongo: {
       uri: process.env.MONGODB_URI,

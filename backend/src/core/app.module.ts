@@ -6,6 +6,7 @@ import { StreamModule } from "../stream/stream.module";
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RtmpServerModule } from "../rtmp-server/rtmp-server.module";
 import { RelayModule } from "../relay/relay.module";
+import { HldServerModule } from "../hls-server/hls-server.module";
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { RelayModule } from "../relay/relay.module";
     DatabaseModule,
     RtmpServerModule,
     RelayModule,
-    StreamModule],
+    StreamModule,
+    HldServerModule],
   controllers: [AppController],
   providers: [AppService],
 })
