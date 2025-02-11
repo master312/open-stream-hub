@@ -4,6 +4,7 @@ import { SignalIcon, ArrowPathIcon, GlobeAltIcon, ClipboardDocumentIcon } from "
 import { StreamInstance } from "../../types/stream.ts";
 import { streamsService } from "../../services/streams.service";
 import HLSPlayer from "../shared/HLSPlayer.tsx";
+import { StreamPreview } from "../shared/StreamPreview.tsx";
 
 interface StreamCardProps {
   stream: StreamInstance;
@@ -36,36 +37,10 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
     return `${hours}h ${minutes}m`;
   };
 
-  const priviewUrl = `${streamsService.getStreamPriviewOrPlaceholder(stream)}`;
-  const renderMedia = () => {
-    if (priviewUrl.toLowerCase().endsWith(".mp4") || priviewUrl.toLowerCase().endsWith(".webm")) {
-      return (
-        <video
-          src={priviewUrl}
-          className="w-full h-full object-cover rounded-t-lg"
-          muted
-          loop
-          autoPlay
-          playsInline
-        />
-      );
-    } else if(priviewUrl.toLowerCase().endsWith("playlist.m3u8")) {
-      return (<HLSPlayer
-        src={priviewUrl}
-        className="w-full h-full object-cover rounded-t-lg"
-        muted
-        autoPlay
-      />);
-    } else {
-      return <img src={priviewUrl} alt={stream.name} className="w-full h-full object-cover rounded-t-lg" />;
-    }
-
-  };
-
   return (
     <div className="card card-hover cursor-pointer" onClick={handleClick}>
       <div className="relative aspect-video">
-        {renderMedia()}
+        <StreamPreview stream={stream} className="w-full h-full object-cover rounded-t-lg" />
         {/* Edit overlay only on thumbnail */}
         <div
           className="absolute inset-0 bg-background-primary/75 opacity-0 hover:opacity-100
@@ -91,9 +66,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
             <SignalIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-1" />
             <textarea
               readOnly
-              value={
-                streamsService.getFullPublicWatchUrl() + "/" + stream.id
-              }
+              value={streamsService.getFullPublicWatchUrl() + "/" + stream.id}
               className="resize-none bg-transparent border-none outline-none text-content-secondary w-full cursor-pointer overflow-wrap-anywhere"
               onClick={(e) => e.stopPropagation()}
               rows={2}

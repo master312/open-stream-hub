@@ -8,12 +8,7 @@ import { StreamAnalytics } from "./StreamAnalytics";
 import { CircularProgress } from "../shared/CircularProgress";
 import { StreamInstance, StreamStatus } from "../../types/stream";
 import { toast } from "react-toastify";
-import {
-  TrashIcon,
-  StopIcon,
-  PlayIcon,
-  ArrowLeftIcon,
-} from "@heroicons/react/24/outline";
+import { TrashIcon, StopIcon, PlayIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Modal } from "../shared/Modal";
 
 export const StreamControlView: React.FC = () => {
@@ -27,50 +22,62 @@ export const StreamControlView: React.FC = () => {
   useEffect(() => {
     if (!streamId) return;
 
+    let pollingInterval: NodeJS.Timeout;
+
+    // Inner function to handle fetch errors consistently
+    const fetchStream = async () => {
+      try {
+        await streamsService.fetchStreamById(streamId);
+      } catch (error) {
+        console.error("Failed to fetch stream:", error);
+        // Only show toast for initial load errors, not polling errors
+        if (!pollingInterval) {
+          toast.error(`Failed to fetch stream: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+      }
+    };
+
     const subscriptions = [
       streamsService.currentStream$.subscribe(setStream),
       streamsService.loading$.subscribe(setLoading),
       streamsService.error$.subscribe(setError),
     ];
 
-    streamsService.fetchStreamById(streamId).catch((error) => {
-      toast.error(`Failed to fetch stream: ${error.message}`);
-    });
+    // Initial fetch
+    fetchStream();
 
-    return () => subscriptions.forEach((sub) => sub.unsubscribe());
-  }, [streamId]);
+    // Set up polling
+    pollingInterval = setInterval(() => {
+      fetchStream();
+    }, 5000); // Match the polling interval from streams.service
 
-  const handleStreamAction = async <T,>(
-    action: () => Promise<T>,
-    successMessage: string,
-    errorPrefix: string,
-  ) => {
+    return () => {
+      // Clear all
+      subscriptions.forEach((sub) => sub.unsubscribe());
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [streamId]); // Only re-run if streamId changes
+
+  const handleStreamAction = async <T,>(action: () => Promise<T>, successMessage: string, errorPrefix: string) => {
     try {
       await action();
       toast.success(successMessage);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : `${errorPrefix}`;
+      const errorMessage = error instanceof Error ? error.message : `${errorPrefix}`;
       toast.error(errorMessage);
     }
   };
 
   const handleStart = () => {
     if (!streamId || !stream) return;
-    handleStreamAction(
-      () => streamsService.startStream(streamId),
-      "Stream started successfully",
-      "Failed to start stream",
-    );
+    handleStreamAction(() => streamsService.startStream(streamId), "Stream started successfully", "Failed to start stream");
   };
 
   const handleStop = () => {
     if (!streamId || !stream) return;
-    handleStreamAction(
-      () => streamsService.stopStream(streamId),
-      "Stream stopped successfully",
-      "Failed to stop stream",
-    );
+    handleStreamAction(() => streamsService.stopStream(streamId), "Stream stopped successfully", "Failed to stop stream");
   };
 
   const handleDelete = async () => {
@@ -136,11 +143,7 @@ export const StreamControlView: React.FC = () => {
     return (
       <div className="flex space-x-4">
         {actionState.showStopButton ? (
-          <Button
-            variant="secondary"
-            className="text-status-error hover:bg-status-error hover:bg-opacity-10"
-            onClick={handleStop}
-          >
+          <Button variant="secondary" className="text-status-error hover:bg-status-error hover:bg-opacity-10" onClick={handleStop}>
             <StopIcon className="w-5 h-5 mr-2" />
             Stop Stream
           </Button>
@@ -180,9 +183,7 @@ export const StreamControlView: React.FC = () => {
       <div className="min-h-screen bg-background-primary p-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-content-primary">
-              {error?.message || "Stream not found"}
-            </h1>
+            <h1 className="text-2xl font-semibold text-content-primary">{error?.message || "Stream not found"}</h1>
             <Button className="mt-4" onClick={() => navigate("/")}>
               <ArrowLeftIcon className="w-5 h-5 mr-2" />
               Back to Dashboard
@@ -208,9 +209,7 @@ export const StreamControlView: React.FC = () => {
             </Button>
             <div className="border-l border-border-primary h-8 mx-2" />
             <div>
-              <h1 className="text-2xl font-semibold text-content-primary">
-                {stream.name}
-              </h1>
+              <h1 className="text-2xl font-semibold text-content-primary">{stream.name}</h1>
               <p className="text-content-secondary">Stream Configuration</p>
             </div>
           </div>
@@ -237,21 +236,11 @@ export const StreamControlView: React.FC = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Stream"
-      >
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Stream">
         <div className="space-y-4">
-          <p className="text-content-primary">
-            Are you sure you want to delete this stream? This action cannot be
-            undone.
-          </p>
+          <p className="text-content-primary">Are you sure you want to delete this stream? This action cannot be undone.</p>
           <div className="flex justify-end space-x-3">
-            <Button
-              variant="secondary"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
             <Button
