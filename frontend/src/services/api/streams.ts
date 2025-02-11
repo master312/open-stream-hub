@@ -18,8 +18,8 @@ export const streamsApi = {
     return response.data;
   },
 
-  getStreamThumbnailUrl: (streamId: string): string => {
-    return `${apiClient.defaults.baseURL}/stream/${streamId}/thumbnail`;
+  getHlsPreviewUrl: (streamId: string): string => {
+    return `${apiClient.defaults.baseURL}/hls/${streamId}/playlist.m3u8`;
   },
 
   createStream: async (data: CreateStreamRequest): Promise<StreamInstance> => {

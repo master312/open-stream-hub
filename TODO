@@ -1,10 +1,8 @@
 TODO:
-- On bootup, restore all 'live' streams to 'waiting' state
 - ! IMPORTANT ! - Check if ffmpeg processness need to be killed manually in onModuleDestroy
 - Fix it so that stream can be force stopped while in 'live' mode
 - Add retry mechanism for stream destinations
-- Restore thumbnail generator, or maybe even a stream video priview?
-
+- Refresh StreamView page evert for example 2 sec (for now)
 
 --- Improvements:
  - Better link generation and config

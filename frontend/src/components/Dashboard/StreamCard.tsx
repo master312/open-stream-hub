@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { StatusBadge } from "../shared/StatusBadge";
 import { SignalIcon, ArrowPathIcon, GlobeAltIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { StreamInstance } from "../../types/stream.ts";
 import { streamsService } from "../../services/streams.service";
+import HLSPlayer from "../shared/HLSPlayer.tsx";
 
 interface StreamCardProps {
   stream: StreamInstance;
@@ -11,17 +12,6 @@ interface StreamCardProps {
 
 export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
   const [copied, setCopied] = useState(false);
-  const [thumbnailRefresh, setThumbnailRefresh] = useState(0);
-
-  useEffect(() => {
-    if (stream.state === "Live") {
-      const interval = setInterval(() => {
-        setThumbnailRefresh((prev) => prev + 1);
-      }, 2000);
-
-      return () => clearInterval(interval);
-    }
-  }, [stream.state]);
 
   const handleClick = () => {
     onClick(stream.id);
@@ -47,16 +37,10 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
   };
 
   const priviewUrl = `${streamsService.getStreamPriviewOrPlaceholder(stream)}`;
-  const isVideoUrl = (url: string) => {
-    return url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".webm");
-    // return url.toLowerCase().startsWith("rtmp");
-  };
-
   const renderMedia = () => {
-    if (isVideoUrl(priviewUrl)) {
+    if (priviewUrl.toLowerCase().endsWith(".mp4") || priviewUrl.toLowerCase().endsWith(".webm")) {
       return (
         <video
-          key={thumbnailRefresh}
           src={priviewUrl}
           className="w-full h-full object-cover rounded-t-lg"
           muted
@@ -65,9 +49,17 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onClick }) => {
           playsInline
         />
       );
+    } else if(priviewUrl.toLowerCase().endsWith("playlist.m3u8")) {
+      return (<HLSPlayer
+        src={priviewUrl}
+        className="w-full h-full object-cover rounded-t-lg"
+        muted
+        autoPlay
+      />);
+    } else {
+      return <img src={priviewUrl} alt={stream.name} className="w-full h-full object-cover rounded-t-lg" />;
     }
 
-    return <img key={thumbnailRefresh} src={priviewUrl} alt={stream.name} className="w-full h-full object-cover rounded-t-lg" />;
   };
 
   return (
