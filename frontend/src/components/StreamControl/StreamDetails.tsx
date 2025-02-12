@@ -56,7 +56,30 @@ export const StreamDetails: React.FC<StreamDetailsProps> = ({ stream }) => {
               />
             </div>
           </div>
+          {/* New Watch URL section with different styling */}
+          <div className="mt-6 p-4 bg-background-hover rounded-lg border-content-accent">
+            <label className="text-sm font-medium text-content-accent mb-2 block">
+              Public Watch URL
+            </label>
+            <div className="flex">
+              <input
+                type="text"
+                readOnly
+                value={`${streamsService.getFullPublicWatchUrl()}/${stream.id}`}
+                className="flex-1 bg-background-primary border border-border-primary rounded-l-lg px-3 py-2
+                         text-content-primary"
+              />
+              <ClipboardButton
+                text={`${streamsService.getFullPublicWatchUrl()}/${stream.id}`}
+                className="bg-background-secondary border border-l-0 border-border-primary rounded-r-lg px-3"
+              />
+            </div>
+            <p className="text-xs text-content-secondary mt-2">
+              Share this URL with your viewers to let them watch the stream
+            </p>
+          </div>
         </div>
+
 
         {/* Right side - Status */}
         <div className="ml-8 flex flex-col items-center justify-center">
