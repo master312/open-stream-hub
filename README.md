@@ -103,7 +103,7 @@ PLATFORMS="linux/arm64" ./scripts/build-all.sh
 REGISTRY=yourname/ PLATFORMS="linux/amd64,linux/arm64" ./scripts/build-all.sh
 
 # Build with specific registry and version
-REGISTRY="your-registry.com/" VERSION="latest" ./scripts/build-all.sh
+REGISTRY=yourname/ VERSION="latest" ./scripts/build-all.sh
 
 # Build individual components
 ./scripts/build-frontend.sh

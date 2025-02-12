@@ -26,10 +26,10 @@ const HLSPlayer: React.FC<HLSPlayerProps> = ({ src, className, muted = true, aut
       const hls = new Hls({
         liveDurationInfinity: true,
         enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 10,
-        liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 5,
+        lowLatencyMode: false,
+        backBufferLength: 20,
+        liveSyncDurationCount: 4,
+        liveMaxLatencyDurationCount: 8,
       });
 
       hlsRef.current = hls;
@@ -100,8 +100,21 @@ const HLSPlayer: React.FC<HLSPlayerProps> = ({ src, className, muted = true, aut
   };
 
   useEffect(() => {
-    retryCountRef.current = 0; // Reset retry counter when source changes
-    initializeHLS();
+    retryCountRef.current = 0;
+    const cleanup = initializeHLS();
+
+    return () => {
+      if (cleanup) cleanup();
+      // Additional cleanup
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.src = "";
+        videoRef.current.load();
+      }
+    };
   }, [src, autoPlay]);
 
   return <video ref={videoRef} className={className} muted={muted} playsInline controls={false} />;
