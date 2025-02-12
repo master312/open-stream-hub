@@ -4,7 +4,7 @@ Uses ffmpeg to redirect input stream from RTMP to other platforms (like Twitch, 
 Can also be used just as RTMP server it self.
 
 ## !!!! App is in development, use at your own risk. !!!!
-![img.png](img.png)
+![img.png](img.png)![img.png](img2.jpg)
 
 # Deploy for development
 ### Requirements
