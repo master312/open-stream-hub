@@ -18,7 +18,7 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({ stream }
 
   const isStreamModifiable = stream.state === "Stopped";
 
-  const handleAddDestination = async (destination: Omit<StreamDestination, "id">) => {
+  const handleAddDestination = async (destination: Omit<StreamDestination, "_id">) => {
     if (!isStreamModifiable) {
       toast.warning("Can not add new destination while stream is running");
       return;
@@ -83,7 +83,7 @@ export const StreamDestinations: React.FC<StreamDestinationsProps> = ({ stream }
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {stream.destinations.map((dest) => (
-          <div key={dest.id} className="flex flex-col p-4 bg-background-hover rounded-lg">
+          <div key={dest._id} className="flex flex-col p-4 bg-background-hover rounded-lg">
             <div className="flex items-center space-x-3 mb-3">
               <img src={`/icons/${dest.platform}.png`} alt={dest.platform} className="w-8 h-8" />
               <div className="min-w-0 flex-1">

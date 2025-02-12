@@ -41,7 +41,7 @@ export const streamsApi = {
     await apiClient.delete(`/stream/${id}`);
   },
 
-  addDestination: async (streamId: string, destination: Omit<StreamDestination, "id">): Promise<StreamInstance> => {
+  addDestination: async (streamId: string, destination: Omit<StreamDestination, "_id">): Promise<StreamInstance> => {
     const response = await apiClient.post<StreamInstance>(`/stream/relay/new/${streamId}`, {
       "relay": destination
     });

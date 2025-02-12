@@ -7,7 +7,7 @@ import { CircularProgress } from "../shared/CircularProgress";
 interface AddDestinationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (destination: Omit<StreamDestination, "id">) => Promise<void>;
+  onSubmit: (destination: Omit<StreamDestination, "_id">) => Promise<void>;
 }
 
 export const AddDestinationModal: React.FC<AddDestinationModalProps> = ({ isOpen, onClose, onSubmit }) => {

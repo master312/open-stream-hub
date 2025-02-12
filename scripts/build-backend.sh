@@ -14,8 +14,7 @@ echo "🏗️  Building backend image..."
 # Set default values for required variables if not set
 REST_API_PORT=${REST_API_PORT:-6636}
 RTMP_INJECT_PORT=${RTMP_INJECT_PORT:-1935}
-MONGODB_URI=${MONGODB_URI:-"mongodb://mongodb:27017"}
-MONGODB_DB_NAME=${MONGODB_DB_NAME:-"open-stream-hub"}
+MONGODB_URI=${MONGODB_URI:-"mongodb://mongodb:27017/open-stream-hub"}
 REGISTRY=${REGISTRY:-""}
 VERSION=${VERSION:-latest}
 
@@ -29,7 +28,6 @@ echo "🔧 Configuration:"
 echo "   Backend Port: ${REST_API_PORT}"
 echo "   RTMP Port: ${RTMP_INJECT_PORT}"
 echo "   MongoDB URI: ${MONGODB_URI}"
-echo "   MongoDB DB Name: ${MONGODB_DB_NAME}"
 
 if [ "${AUTOMATIC_YES}" = "false" ]; then
     read -p "Do you want to continue? [y/N] " -n 1 -r
@@ -45,7 +43,6 @@ docker build \
     --build-arg REST_API_PORT=${REST_API_PORT} \
     --build-arg RTMP_INJECT_PORT=${RTMP_INJECT_PORT} \
     --build-arg MONGODB_URI=${MONGODB_URI} \
-    --build-arg MONGODB_DB_NAME=${MONGODB_DB_NAME} \
     -f docker/production/backend/Dockerfile \
     -t ${IMAGE_NAME} \
     .

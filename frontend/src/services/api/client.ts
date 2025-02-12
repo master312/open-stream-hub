@@ -1,6 +1,7 @@
 import axios from "axios";
+import { useEnvVar } from "../../hooks/useEnvVar.ts";
 
-const API_BASE_URL = "http://localhost:6636/api";
+const API_BASE_URL = `${useEnvVar("VITE_REST_API_HOST")}/api`;
 
 console.log("CONFIG - Api base url: ", API_BASE_URL);
 

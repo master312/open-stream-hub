@@ -207,7 +207,7 @@ class StreamsService {
     }
   }
 
-  async addDestination(streamId: string, destination: Omit<StreamDestination, "id">) {
+  async addDestination(streamId: string, destination: Omit<StreamDestination, "_id">) {
     try {
       this.loading.next(true);
       this.error.next(null);

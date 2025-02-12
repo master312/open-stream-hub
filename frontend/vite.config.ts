@@ -1,20 +1,19 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
-import { getConfig } from "./hack_config";
 
-const config = getConfig();
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '');
 
-export default defineConfig({
-  plugins: [react()],
-  base: "/",
-  server: {
-    host: true,
-    port: parseInt(config.FRONTEND_PORT),
-  },
-  define: {
-    "import.meta.env.REST_API_HOST": JSON.stringify(config.REST_API_HOST),
-    "import.meta.env.REST_API_PORT": JSON.stringify(config.REST_API_PORT),
-  },
+  return {
+    plugins: [react()],
+    base: "/",
+    server: {
+      host: true,
+      port: parseInt(env.VITE_PORT || '12344'),
+    },
+  };
 });
 
 // Restrictive CORS configuration for Deno production

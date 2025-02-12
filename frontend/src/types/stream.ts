@@ -24,7 +24,7 @@ export interface StreamInstance {
 }
 
 export interface StreamDestination {
-  id: string; // Unique per stream!
+  _id: string; // Unique per stream!
   platform: StreamDestinationPlatform;
   streamKey: string;
   serverUrl: string;

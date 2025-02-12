@@ -3,7 +3,6 @@ import { StatusBadge } from "../shared/StatusBadge";
 import { SignalIcon, ArrowPathIcon, GlobeAltIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { StreamInstance } from "../../types/stream.ts";
 import { streamsService } from "../../services/streams.service";
-import HLSPlayer from "../shared/HLSPlayer.tsx";
 import { StreamPreview } from "../shared/StreamPreview.tsx";
 
 interface StreamCardProps {

@@ -4,7 +4,6 @@ import { StreamInstance } from "../../types/stream";
 import { streamsService } from "../../services/streams.service";
 import { StatusBadge } from "../shared/StatusBadge";
 import { Button } from "../shared/Button";
-import HLSPlayer from "../shared/HLSPlayer";
 import { StreamPreview } from "../shared/StreamPreview";
 
 interface StreamDetailsProps {

@@ -1,50 +1,36 @@
-FROM node:20-alpine AS builder
-
-# Add ARG statements to accept build arguments
-ARG FRONTEND_PORT
-ARG REST_API_HOST
-ARG REST_API_PORT
+# Build stage
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
 # Copy package files
-COPY frontend/package.json ./
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-# Copy the rest of the frontend files and common folder
-COPY frontend ./
-COPY common ../common
+# Copy all files
+COPY . .
 
-# Build the application
+# Build the app
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Add ARG statements again (as they don't persist across build stages)
-ARG FRONTEND_PORT
-ARG REST_API_HOST
-ARG REST_API_PORT
+# Copy built assets from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy build output to nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy nginx template and script
-COPY docker/production/frontend/nginx.template /etc/nginx/templates/default.conf.template
-COPY docker/production/frontend/docker-entrypoint.sh /docker-entrypoint.sh
+# Copy env.js file to assets
+COPY public/env.js /usr/share/nginx/html/env.js
 
-# Make the entrypoint script executable
-RUN chmod +x /docker-entrypoint.sh
+# Copy and set up the env-config script
+COPY docker-setup-env.sh /docker-entrypoint.d/docker-setup-env.sh
+RUN chmod +x /docker-entrypoint.d/docker-setup-env.sh
 
-# Environment variables using ARGs
-ENV FRONTEND_PORT=${FRONTEND_PORT:-3000}
-ENV REST_API_HOST=${REST_API_HOST:-localhost}
-ENV REST_API_PORT=${REST_API_PORT:-6636}
+# Expose port 80
+EXPOSE 80
 
-EXPOSE ${FRONTEND_PORT}
-
-# Use custom entrypoint script
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+# nginx container already has a CMD entry point, so we don't need to specify it

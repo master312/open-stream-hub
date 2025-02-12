@@ -1,0 +1,4 @@
+window.env = {
+  VITE_PORT: "VITE_PORT",
+  VITE_REST_API_HOST: "VITE_REST_API_HOST",
+};

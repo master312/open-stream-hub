@@ -2,12 +2,11 @@ TODO:
 - ! IMPORTANT ! - Check if ffmpeg processness need to be killed manually in onModuleDestroy
 - Fix it so that stream can be force stopped while in 'live' mode
 - Add retry mechanism for stream destinations
-- Refresh StreamView page evert for example 2 sec (for now)
 
 --- Improvements:
  - Better link generation and config
    * with settings for public and watch host URLs, etc....
-
+ - When live preview is disabled, show some static image so we know.
 
 
 ------------------- Old deprecated ----------------------
