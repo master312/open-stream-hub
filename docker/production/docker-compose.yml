@@ -15,8 +15,8 @@ services:
     image: open-stream-hub-backend:latest
     restart: always
     ports:
-      - "6636"  # Rest API port
-      - "1935"  # RTMP RTMP server port
+      - "6636:6636"  # Rest API port
+      - "1935:1935"  # RTMP RTMP server port
     depends_on:
       - mongodb
     environment:
@@ -24,7 +24,7 @@ services:
       - REST_API_PORT=6636
       - RTMP_SERVER_PORT=1935
       - RTMP_INJECT_HOST=rtmp://localhost
-      - RTMP_INJECT_ROOT=/injectT
+      - RTMP_INJECT_ROOT=/inject
       - RTMP_WATCH_ROOT=/watch
       - HSL_PREVIEW_ENABLED=true
 

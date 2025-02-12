@@ -1,4 +1,18 @@
-FROM denoland/deno:2.1.1
+# Build stage
+FROM node:22-slim AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+RUN npm run build
+
+# Production stage
+FROM node:22-slim
 
 # Install FFmpeg
 RUN apt-get update && \
@@ -8,16 +22,12 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Copy backend files and common folder
-COPY backend ./
-COPY common ../common
+# Copy package files and install production dependencies only
+COPY package*.json ./
+RUN npm ci --only=production
 
-# Cache dependencies
-RUN deno cache --lock=deno.lock main.ts
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
 
-# The port your app runs on
-EXPOSE $REST_API_PORT
-EXPOSE $RTMP_INJECT_PORT
-
-# Run the app
-CMD ["run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "--allow-run", "--allow-sys", "main.ts"]
+# Run the application
+CMD ["npm", "run", "start:prod"]
